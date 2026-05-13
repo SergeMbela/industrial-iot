@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Industrial IoT Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: #f4f6f8;
+      color: #1a1a1a;
+    }
+
+    header {
+      background: #1f4258;
+      color: white;
+      padding: 18px 24px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+    }
+
+    .tabs {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      background: white;
+      border-bottom: 1px solid #d7dde4;
+    }
+
+    .tab-button {
+      cursor: pointer;
+      border: none;
+      background: transparent;
+      color: #4a5568;
+      padding: 16px 22px;
+      font-size: 16px;
+      transition: color 0.2s ease, border-bottom 0.2s ease;
+      border-bottom: 4px solid transparent;
+    }
+
+    .tab-button.active {
+      color: #1f4258;
+      border-bottom-color: #1f4258;
+      font-weight: 600;
+    }
+
+    .content {
+      max-width: 1100px;
+      margin: 24px auto;
+      padding: 0 24px 36px;
+    }
+
+    .tab-panel {
+      display: none;
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+    }
+
+    .tab-panel.active {
+      display: block;
+    }
+
+    .section-title {
+      margin-top: 0;
+      margin-bottom: 18px;
+      color: #1f4258;
+    }
+
+    .card-grid {
+      display: grid;
+      gap: 18px;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    }
+
+    .card {
+      border: 1px solid #e2e8f0;
+      background: #fafbfc;
+      border-radius: 12px;
+      padding: 18px;
+      min-height: 120px;
+    }
+
+    .card h3 {
+      margin-top: 0;
+      margin-bottom: 12px;
+      color: #1f4258;
+      font-size: 18px;
+    }
+
+    .card p {
+      margin: 0;
+      color: #475569;
+      line-height: 1.6;
+    }
+
+    .notice {
+      padding: 14px 18px;
+      background: #e8f1ff;
+      border: 1px solid #c7dafe;
+      border-radius: 10px;
+      color: #1f417a;
+      margin-top: 18px;
+    }
+
+    @media (max-width: 640px) {
+      .tab-button {
+        flex: 1 1 50%;
+        text-align: center;
+      }
+
+      .content {
+        padding: 0 14px 24px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Industrial IoT Dashboard</h1>
+    <p>Interface de supervision et configuration des machines, paramètres et monitoring.</p>
+  </header>
+
+  <div class="tabs" role="tablist">
+    <button class="tab-button active" data-tab="machines" role="tab" aria-selected="true">Machines</button>
+    <button class="tab-button" data-tab="parametres" role="tab" aria-selected="false">Paramètres</button>
+    <button class="tab-button" data-tab="monitoring" role="tab" aria-selected="false">Monitoring</button>
+    <button class="tab-button" data-tab="configuration" role="tab" aria-selected="false">Configuration</button>
+  </div>
+
+  <main class="content">
+    <section id="machines" class="tab-panel active" role="tabpanel">
+      <h2 class="section-title">Machines</h2>
+      <div class="card-grid">
+        <div class="card">
+          <h3>Machine A</h3>
+          <p>Statut : En ligne</p>
+          <p>Température : 72°C</p>
+          <p>Vitesse : 1250 RPM</p>
+        </div>
+        <div class="card">
+          <h3>Machine B</h3>
+          <p>Statut : Hors ligne</p>
+          <p>Dernière communication : 8 min</p>
+          <p>Actions : Vérifier la connexion</p>
+        </div>
+        <div class="card">
+          <h3>Machine C</h3>
+          <p>Statut : En maintenance</p>
+          <p>Prochaine inspection : 14h30</p>
+          <p>Note : Modifier les seuils de sécurité.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="parametres" class="tab-panel" role="tabpanel">
+      <h2 class="section-title">Paramètres</h2>
+      <div class="card-grid">
+        <div class="card">
+          <h3>Seuils d'alerte</h3>
+          <p>Température maximale : 85°C</p>
+          <p>Pression maximale : 120 bar</p>
+        </div>
+        <div class="card">
+          <h3>Horaires de production</h3>
+          <p>Matin : 06:00 - 14:00</p>
+          <p>Soir : 14:30 - 22:30</p>
+        </div>
+        <div class="card">
+          <h3>Notifications</h3>
+          <p>Emails : activés</p>
+          <p>SMS : désactivés</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="monitoring" class="tab-panel" role="tabpanel">
+      <h2 class="section-title">Monitoring</h2>
+      <div class="card-grid">
+        <div class="card">
+          <h3>Flux de données</h3>
+          <p>Dernière mise à jour : 12 secondes</p>
+          <p>Volume : 1.2 Mo/s</p>
+        </div>
+        <div class="card">
+          <h3>Alertes récentes</h3>
+          <p>0 alertes critiques</p>
+          <p>2 alertes de performance</p>
+        </div>
+        <div class="card">
+          <h3>Disponibilité</h3>
+          <p>Taux de disponibilité : 99.8 %</p>
+          <p>Temps d'arrêt : 12 min / 24h</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="configuration" class="tab-panel" role="tabpanel">
+      <h2 class="section-title">Configuration</h2>
+      <div class="card-grid">
+        <div class="card">
+          <h3>Connexion</h3>
+          <p>Base de données : PostgreSQL</p>
+          <p>Hôte : localhost</p>
+          <p>Port : 5455</p>
+        </div>
+        <div class="card">
+          <h3>Infrastructure</h3>
+          <p>RabbitMQ : 5673</p>
+          <p>Grafana : 3002</p>
+          <p>Qdrant : 6338</p>
+        </div>
+        <div class="card">
+          <h3>Environnement</h3>
+          <p>Mode : Production</p>
+          <p>Version UI : 1.0.0</p>
+        </div>
+      </div>
+      <div class="notice">
+        Personnalisez cette interface en remplaçant les contenus de chaque section par des données réelles ou des appels vers votre backend Python.
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const tabs = document.querySelectorAll('.tab-button');
+    const panels = document.querySelectorAll('.tab-panel');
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabs.forEach(button => {
+          button.classList.remove('active');
+          button.setAttribute('aria-selected', 'false');
+        });
+
+        panels.forEach(panel => panel.classList.remove('active'));
+
+        tab.classList.add('active');
+        tab.setAttribute('aria-selected', 'true');
+        document.getElementById(tab.dataset.tab).classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>
