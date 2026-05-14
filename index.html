@@ -4,118 +4,10 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Industrial IoT Dashboard</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      background: #f4f6f8;
-      color: #1a1a1a;
-    }
-
-    header {
-      background: #1f4258;
-      color: white;
-      padding: 18px 24px;
-      text-align: center;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
-    }
-
-    .tabs {
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      background: white;
-      border-bottom: 1px solid #d7dde4;
-    }
-
-    .tab-button {
-      cursor: pointer;
-      border: none;
-      background: transparent;
-      color: #4a5568;
-      padding: 16px 22px;
-      font-size: 16px;
-      transition: color 0.2s ease, border-bottom 0.2s ease;
-      border-bottom: 4px solid transparent;
-    }
-
-    .tab-button.active {
-      color: #1f4258;
-      border-bottom-color: #1f4258;
-      font-weight: 600;
-    }
-
-    .content {
-      max-width: 1100px;
-      margin: 24px auto;
-      padding: 0 24px 36px;
-    }
-
-    .tab-panel {
-      display: none;
-      background: white;
-      border-radius: 12px;
-      padding: 24px;
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
-    }
-
-    .tab-panel.active {
-      display: block;
-    }
-
-    .section-title {
-      margin-top: 0;
-      margin-bottom: 18px;
-      color: #1f4258;
-    }
-
-    .card-grid {
-      display: grid;
-      gap: 18px;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    }
-
-    .card {
-      border: 1px solid #e2e8f0;
-      background: #fafbfc;
-      border-radius: 12px;
-      padding: 18px;
-      min-height: 120px;
-    }
-
-    .card h3 {
-      margin-top: 0;
-      margin-bottom: 12px;
-      color: #1f4258;
-      font-size: 18px;
-    }
-
-    .card p {
-      margin: 0;
-      color: #475569;
-      line-height: 1.6;
-    }
-
-    .notice {
-      padding: 14px 18px;
-      background: #e8f1ff;
-      border: 1px solid #c7dafe;
-      border-radius: 10px;
-      color: #1f417a;
-      margin-top: 18px;
-    }
-
-    @media (max-width: 640px) {
-      .tab-button {
-        flex: 1 1 50%;
-        text-align: center;
-      }
-
-      .content {
-        padding: 0 14px 24px;
-      }
-    }
-  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
   <header>
@@ -132,46 +24,217 @@
 
   <main class="content">
     <section id="machines" class="tab-panel active" role="tabpanel">
-      <h2 class="section-title">Machines</h2>
-      <div class="card-grid">
-        <div class="card">
-          <h3>Machine A</h3>
-          <p>Statut : En ligne</p>
-          <p>Température : 72°C</p>
-          <p>Vitesse : 1250 RPM</p>
+      <h2 class="section-title">Parc Machines</h2>
+      
+      <div class="sub-tabs" role="tablist">
+        <button class="sub-tab-button active" data-subtab="etat-parc">Etat du parc</button>
+        <button class="sub-tab-button" data-subtab="liste-machines">Liste des machines</button>
+        <button class="sub-tab-button" data-subtab="nouvelle-machine">Nouvelle machine</button>
+        <button class="sub-tab-button" data-subtab="maintenance">Maintenance</button>
+        <button class="sub-tab-button" data-subtab="marques-sub">Marques</button>
+      </div>
+
+      <div id="liste-machines" class="sub-tab-panel">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+          <h3 style="color: var(--text-muted); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em;">Répertoire complet du parc</h3>
+          <button onclick="loadMachinesList()" class="btn" style="width: auto; padding: 0.5rem 1rem; font-size: 0.75rem;">Actualiser</button>
         </div>
-        <div class="card">
-          <h3>Machine B</h3>
-          <p>Statut : Hors ligne</p>
-          <p>Dernière communication : 8 min</p>
-          <p>Actions : Vérifier la connexion</p>
+        <div class="table-container">
+          <table id="machinesTable">
+            <thead>
+              <tr>
+                <th>ID Machine</th>
+                <th>Type</th>
+                <th>Marque</th>
+                <th>Localisation</th>
+                <th>Élévation</th>
+                <th>Date Achat</th>
+                <th>Statut</th>
+              </tr>
+            </thead>
+            <tbody id="machinesTableBody">
+              <!-- Rempli par JS -->
+            </tbody>
+          </table>
         </div>
-        <div class="card">
-          <h3>Machine C</h3>
-          <p>Statut : En maintenance</p>
-          <p>Prochaine inspection : 14h30</p>
-          <p>Note : Modifier les seuils de sécurité.</p>
+        <div class="pagination">
+          <button id="prevPage" class="pagination-btn" disabled>Précédent</button>
+          <span id="pageInfo" class="pagination-info">Page 1 sur 1</span>
+          <button id="nextPage" class="pagination-btn" disabled>Suivant</button>
+        </div>
+      </div>
+
+      <div id="etat-parc" class="sub-tab-panel active">
+        <h3 style="margin-bottom: 1rem; color: var(--text-muted); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em;">État du parc en temps réel</h3>
+        <div class="card-grid" id="etatParcGrid">
+          <!-- Rempli par JS -->
+        </div>
+      </div>
+
+      <div id="nouvelle-machine" class="sub-tab-panel">
+        <div class="card" style="margin-bottom: 2rem; max-width: 800px;">
+          <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1.5rem;">
+            <h3>Enregistrer une nouvelle machine</h3>
+            <span class="card-title-badge">Configuration</span>
+          </div>
+          <form id="addMachineForm" class="machine-form-grid">
+            <div class="form-group">
+              <label for="machineId">ID Machine</label>
+              <input type="text" id="machineId" class="form-input" placeholder="ex: BRO-001, PMP-05..." required>
+            </div>
+            <div class="form-group">
+              <label for="machineType">Type de machine</label>
+              <select id="machineType" class="form-input">
+                <option value="">Sélectionner un type...</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="machineBrand">Marque</label>
+              <select id="machineBrand" class="form-input">
+                <option value="">Sélectionner une marque...</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="machineLoc">Zone de Localisation</label>
+              <select id="machineLoc" class="form-input">
+                <option value="">Sélectionner une zone...</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="machineElev">Élévation spécifique (m)</label>
+              <input type="number" id="machineElev" class="form-input" placeholder="Optionnel">
+            </div>
+            <div class="form-group">
+              <label for="machineDate">Date d'achat</label>
+              <input type="date" id="machineDate" class="form-input">
+            </div>
+            <div style="grid-column: span 2;">
+              <button type="submit" id="addMachineBtn" class="btn">Enregistrer la machine</button>
+            </div>
+          </form>
+          <div id="addMachineStatus" class="status-message"></div>
+        </div>
+      </div>
+
+      <div id="maintenance" class="sub-tab-panel">
+        <div class="card-grid">
+          <div class="card">
+            <h3>Prochaines interventions</h3>
+            <p>BRO-001 <span>Demain, 08:00</span></p>
+            <p>PMP-002 <span>18 Mai, 10:30</span></p>
+            <p>FOR-003 <span>22 Mai, 14:00</span></p>
+          </div>
+          <div class="card">
+            <h3>Statistiques Maintenance</h3>
+            <p>Taux de panne <span>1.2 %</span></p>
+            <p>MTBF <span>450 h</span></p>
+            <p>MTTR <span>2.5 h</span></p>
+          </div>
+          <div class="card">
+            <h3>Alertes Maintenance</h3>
+            <p>BRO-001 <span class="status-warning">Vibration élevée</span></p>
+            <p>PMP-054 <span class="status-warning">Filtre à changer</span></p>
+          </div>
+        </div>
+      </div>
+      <div id="marques-sub" class="sub-tab-panel">
+        <h3 style="margin-bottom: 1rem; color: var(--text-muted); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em;">Gestion des Marques</h3>
+        <div class="card-grid">
+          <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1.5rem;">
+              <h3>Ajouter une marque</h3>
+              <span class="card-title-badge">Nouveau</span>
+            </div>
+            <form id="addBrandForm">
+              <div class="form-group">
+                <label for="brandName">Nom de la marque</label>
+                <input type="text" id="brandName" class="form-input" placeholder="ex: Caterpillar, Siemens..." required>
+              </div>
+              <div class="form-group">
+                <label for="brandCountry">Pays d'origine</label>
+                <input type="text" id="brandCountry" class="form-input" placeholder="ex: USA, Allemagne...">
+              </div>
+              <div class="form-group">
+                <label for="brandContact">Contact support</label>
+                <input type="text" id="brandContact" class="form-input" placeholder="Email ou téléphone">
+              </div>
+              <button type="submit" id="addBrandBtn" class="btn">
+                <span>Ajouter la marque</span>
+              </button>
+            </form>
+            <div id="addBrandStatus" class="status-message"></div>
+          </div>
+
+          <div class="card">
+            <h3>Informations</h3>
+            <p>Les marques enregistrées ici pourront être associées à vos machines dans l'onglet Configuration.</p>
+            <p>Assurez-vous que les informations de contact sont à jour pour faciliter la maintenance.</p>
+          </div>
         </div>
       </div>
     </section>
+    
 
     <section id="parametres" class="tab-panel" role="tabpanel">
       <h2 class="section-title">Paramètres</h2>
-      <div class="card-grid">
-        <div class="card">
-          <h3>Seuils d'alerte</h3>
-          <p>Température maximale : 85°C</p>
-          <p>Pression maximale : 120 bar</p>
+
+      <div class="sub-tabs" role="tablist">
+        <button class="sub-tab-button active" data-subtab="param-general">Général</button>
+        <button class="sub-tab-button" data-subtab="param-valeurs">Valeurs machines</button>
+      </div>
+
+      <div id="param-general" class="sub-tab-panel active">
+        <div class="card-grid">
+          <div class="card">
+            <h3>Seuils d'alerte</h3>
+            <p>Temp. Max <span>85°C</span></p>
+            <p>Pression Max <span>120 bar</span></p>
+          </div>
+          <div class="card">
+            <h3>Horaires</h3>
+            <p>Matin <span>06:00 - 14:00</span></p>
+            <p>Soir <span>14:30 - 22:30</span></p>
+          </div>
+          <div class="card">
+            <h3>Notifications</h3>
+            <p>Emails <span class="status-online">Actifs</span></p>
+            <p>SMS <span class="status-offline">Inactifs</span></p>
+          </div>
         </div>
-        <div class="card">
-          <h3>Horaires de production</h3>
-          <p>Matin : 06:00 - 14:00</p>
-          <p>Soir : 14:30 - 22:30</p>
-        </div>
-        <div class="card">
-          <h3>Notifications</h3>
-          <p>Emails : activés</p>
-          <p>SMS : désactivés</p>
+      </div>
+
+      <div id="param-valeurs" class="sub-tab-panel">
+        <div class="card" style="max-width: 100%;">
+          <h3>Configuration des Valeurs Machines</h3>
+          <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Définissez les seuils critiques et les paramètres de performance par type de machine.</p>
+          
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th rowspan="2">Type / Marque</th>
+                  <th colspan="3" style="text-align: center; background: rgba(14, 165, 233, 0.1);">Performance</th>
+                  <th colspan="3" style="text-align: center; background: rgba(16, 185, 129, 0.1);">Mécanique</th>
+                  <th colspan="3" style="text-align: center; background: rgba(245, 158, 11, 0.1);">Thermique/Pression</th>
+                  <th rowspan="2">Action</th>
+                </tr>
+                <tr>
+                  <th title="Conso Max (L/h)">L/h</th>
+                  <th title="Ampérage Max (A)">Amp</th>
+                  <th title="Taux Ralenti Max (%)">Idle %</th>
+                  <th title="Temp Max (°C)">Temp °C</th>
+                  <th title="Vib. Vitesse (mm/s)">Vib mm/s</th>
+                  <th title="Vib. Accel (g)">Vib g</th>
+                  <th title="Pression Huile Min (bar)">Huile bar</th>
+                  <th title="Pression Syst. Nom (bar)">Syst. bar</th>
+                  <th title="Echappement Max (°C)">Echap. °C</th>
+                </tr>
+              </thead>
+              <tbody id="machineConfigsTableBody">
+                <!-- Rempli par JS -->
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </section>
@@ -218,6 +281,47 @@
           <p>Version UI : 1.0.0</p>
         </div>
       </div>
+      
+      <div class="card" style="margin-top: 18px;">
+        <h3>Services de Télémétrie</h3>
+        <p style="color: var(--text-muted); margin-bottom: 1rem;">Gérez les scripts d'arrière-plan sans quitter l'interface.</p>
+        
+        <div style="display: flex; gap: 2rem;">
+          <!-- Producer -->
+          <div style="flex: 1; padding: 1rem; border: 1px solid var(--border-color); border-radius: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+              <h4 style="margin: 0;">Producteur (Simulateur)</h4>
+              <span id="producerStatus" class="badge">Inconnu</span>
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+              <button onclick="manageProcess('producer', 'start')" class="btn" style="flex: 1; padding: 0.5rem; background: var(--success-color);">▶ Démarrer</button>
+              <button onclick="manageProcess('producer', 'stop')" class="btn" style="flex: 1; padding: 0.5rem; background: var(--error-color);">■ Arrêter</button>
+            </div>
+          </div>
+
+          <!-- Consumer -->
+          <div style="flex: 1; padding: 1rem; border: 1px solid var(--border-color); border-radius: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+              <h4 style="margin: 0;">Consommateur (Enregistreur)</h4>
+              <span id="consumerStatus" class="badge">Inconnu</span>
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+              <button onclick="manageProcess('consumer', 'start')" class="btn" style="flex: 1; padding: 0.5rem; background: var(--success-color);">▶ Démarrer</button>
+              <button onclick="manageProcess('consumer', 'stop')" class="btn" style="flex: 1; padding: 0.5rem; background: var(--error-color);">■ Arrêter</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top: 18px;">
+        <h3>Base de données</h3>
+        <p>Créez les tables PostgreSQL définies dans <code>matrice.sql</code>.</p>
+        <button id="createTablesBtn" class="btn">Créer les tables</button>
+        <div id="progressContainer" class="progress-container">
+          <div id="progressBar" class="progress-bar"></div>
+        </div>
+        <div id="createTablesStatus" class="status-message"></div>
+      </div>
       <div class="notice">
         Personnalisez cette interface en remplaçant les contenus de chaque section par des données réelles ou des appels vers votre backend Python.
       </div>
@@ -242,6 +346,509 @@
         document.getElementById(tab.dataset.tab).classList.add('active');
       });
     });
+
+    // Gestion des sous-onglets pour Machines
+    const subTabs = document.querySelectorAll('.sub-tab-button');
+    const subPanels = document.querySelectorAll('.sub-tab-panel');
+
+    subTabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        subTabs.forEach(button => {
+          button.classList.remove('active');
+        });
+
+        subPanels.forEach(panel => panel.classList.remove('active'));
+
+        tab.classList.add('active');
+        const targetPanel = document.getElementById(tab.dataset.subtab);
+        if (targetPanel) targetPanel.classList.add('active');
+
+        // Charger les données spécifiques si nécessaire
+        if (tab.dataset.subtab === 'etat-parc') loadEtatParc();
+        if (tab.dataset.subtab === 'liste-machines') loadMachinesList();
+        if (tab.dataset.subtab === 'param-valeurs') loadMachineConfigs();
+      });
+    });
+
+    const createTablesBtn = document.getElementById('createTablesBtn');
+    const createTablesStatus = document.getElementById('createTablesStatus');
+    const progressContainer = document.getElementById('progressContainer');
+    const progressBar = document.getElementById('progressBar');
+
+    if (createTablesBtn) {
+      createTablesBtn.addEventListener('click', async () => {
+        createTablesBtn.disabled = true;
+        createTablesStatus.textContent = 'En cours...';
+        createTablesStatus.className = 'status-message';
+        progressContainer.classList.add('active');
+        progressBar.style.width = '0%';
+        progressBar.textContent = '';
+
+        const simulateProgress = () => {
+          let currentWidth = parseFloat(progressBar.style.width);
+          if (currentWidth < 90) {
+            const increment = Math.random() * 30;
+            currentWidth = Math.min(currentWidth + increment, 90);
+            progressBar.style.width = currentWidth + '%';
+            progressBar.textContent = Math.round(currentWidth) + '%';
+            setTimeout(simulateProgress, 400);
+          }
+        };
+
+        simulateProgress();
+
+        try {
+          const response = await fetch('/create-tables', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          });
+
+          const data = await response.json();
+          progressBar.style.width = '100%';
+          progressBar.textContent = '100%';
+
+          if (response.ok) {
+            createTablesStatus.textContent = data.message || 'Tables créées avec succès.';
+            createTablesStatus.classList.add('success');
+          } else {
+            createTablesStatus.textContent = data.message || 'Une erreur est survenue.';
+            createTablesStatus.classList.add('error');
+          }
+        } catch (err) {
+          progressBar.style.width = '100%';
+          progressBar.textContent = 'Erreur';
+          createTablesStatus.textContent = `Erreur réseau : ${err.message}`;
+          createTablesStatus.classList.add('error');
+        } finally {
+          setTimeout(() => {
+            progressContainer.classList.remove('active');
+            createTablesBtn.disabled = false;
+          }, 1500);
+        }
+      });
+    }
+
+    // Gestion du formulaire d'ajout de marque
+    const addBrandForm = document.getElementById('addBrandForm');
+    const addBrandBtn = document.getElementById('addBrandBtn');
+    const addBrandStatus = document.getElementById('addBrandStatus');
+
+    if (addBrandForm) {
+      addBrandForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const name = document.getElementById('brandName').value;
+        const country = document.getElementById('brandCountry').value;
+        const support_contact = document.getElementById('brandContact').value;
+
+        addBrandBtn.disabled = true;
+        addBrandStatus.textContent = 'Ajout en cours...';
+        addBrandStatus.className = 'status-message';
+        addBrandStatus.style.display = 'block';
+
+        try {
+          const response = await fetch('/add-brand', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ name, country, support_contact })
+          });
+
+          const data = await response.json();
+
+          if (response.ok) {
+            addBrandStatus.textContent = data.message;
+            addBrandStatus.classList.add('success');
+            addBrandForm.reset();
+          } else {
+            addBrandStatus.textContent = data.message || 'Une erreur est survenue.';
+            addBrandStatus.classList.add('error');
+          }
+        } catch (err) {
+          addBrandStatus.textContent = `Erreur réseau : ${err.message}`;
+          addBrandStatus.classList.add('error');
+        } finally {
+          addBrandBtn.disabled = false;
+          setTimeout(() => {
+            if (addBrandStatus.classList.contains('success')) {
+              addBrandStatus.style.display = 'none';
+            }
+          }, 3000);
+        }
+      });
+    }
+
+    // Fonction pour charger les marques
+    const loadBrands = async () => {
+      const select = document.getElementById('machineBrand');
+      if (!select) return;
+
+      try {
+        const response = await fetch('/get-brands');
+        const brands = await response.json();
+        
+        // Garder seulement la première option par défaut
+        select.innerHTML = '<option value="">Sélectionner une marque...</option>';
+        
+        brands.forEach(brand => {
+          const option = document.createElement('option');
+          option.value = brand.id;
+          option.textContent = brand.name;
+          select.appendChild(option);
+        });
+      } catch (err) {
+        console.error('Erreur chargement marques:', err);
+      }
+    };
+
+        // Recharger les marques au démarrage
+    loadBrands();
+
+    // Fonction pour charger les types de machines
+    const loadMachineTypes = async () => {
+      const select = document.getElementById('machineType');
+      if (!select) return;
+
+      try {
+        const response = await fetch('/get-machine-types');
+        const types = await response.json();
+        
+        select.innerHTML = '<option value="">Sélectionner un type...</option>';
+        
+        types.forEach(type => {
+          const option = document.createElement('option');
+          option.value = type.id;
+          option.textContent = type.name;
+          select.appendChild(option);
+        });
+      } catch (err) {
+        console.error('Erreur chargement types:', err);
+      }
+    };
+
+    // Charger les types au démarrage
+    loadMachineTypes();
+
+    // Fonction pour charger les localisations
+    const loadLocalisations = async () => {
+      const select = document.getElementById('machineLoc');
+      if (!select) return;
+
+      try {
+        const response = await fetch('/get-localisations');
+        const locs = await response.json();
+        
+        select.innerHTML = '<option value="">Sélectionner une zone...</option>';
+        
+        locs.forEach(loc => {
+          const option = document.createElement('option');
+          option.value = loc.id;
+          option.textContent = `${loc.name} (${loc.type})`;
+          select.appendChild(option);
+        });
+      } catch (err) {
+        console.error('Erreur chargement localisations:', err);
+      }
+    };
+
+    // Charger les localisations au démarrage
+    loadLocalisations();
+
+    // Fonction pour charger la liste des machines
+    let currentMachinesPage = 1;
+
+    const loadMachinesList = async (page = 1) => {
+      currentMachinesPage = page;
+      const tbody = document.getElementById('machinesTableBody');
+      const pageInfo = document.getElementById('pageInfo');
+      const prevBtn = document.getElementById('prevPage');
+      const nextBtn = document.getElementById('nextPage');
+      
+      if (!tbody) return;
+
+      try {
+        const response = await fetch(`/get-machines?page=${page}&per_page=10`);
+        const data = await response.json();
+        const machines = data.machines;
+        
+        tbody.innerHTML = '';
+        
+        machines.forEach(m => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td><strong>${m.id}</strong></td>
+            <td><span class="badge badge-blue">${m.type || 'N/A'}</span></td>
+            <td>${m.brand || 'N/A'}</td>
+            <td>${m.localisation || 'N/A'}</td>
+            <td>${m.elevation !== null ? m.elevation + ' m' : 'Zone'}</td>
+            <td>${m.date_achat || 'N/A'}</td>
+            <td><span class="status-indicator ${m.status === 'Actif' ? 'status-online' : 'status-warning'}"></span>${m.status}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+        // Mise à jour de l'UI pagination
+        pageInfo.textContent = `Page ${data.page} sur ${data.total_pages}`;
+        prevBtn.disabled = data.page <= 1;
+        nextBtn.disabled = data.page >= data.total_pages;
+
+      } catch (err) {
+        console.error('Erreur chargement liste machines:', err);
+      }
+    };
+
+    document.getElementById('prevPage').addEventListener('click', () => {
+      if (currentMachinesPage > 1) loadMachinesList(currentMachinesPage - 1);
+    });
+
+    document.getElementById('nextPage').addEventListener('click', () => {
+      loadMachinesList(currentMachinesPage + 1);
+    });
+
+    // Charger la liste au démarrage
+    loadMachinesList();
+
+    // Fonction pour charger les configurations des machines
+    const loadMachineConfigs = async () => {
+      const tbody = document.getElementById('machineConfigsTableBody');
+      if (!tbody) return;
+
+      try {
+        console.log("Fetching machine configs...");
+        const response = await fetch('/get-machine-configs');
+        const configs = await response.json();
+        console.log("Configs received:", configs);
+        
+        tbody.innerHTML = '';
+        
+        configs.forEach(c => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>
+              <div style="font-weight: 700;">${c.type}</div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">${c.brand}</div>
+            </td>
+            <td><input type="number" id="fuel-${c.id}" class="form-input" value="${c.perf.fuel}" style="width: 60px; padding: 0.25rem;"></td>
+            <td><input type="number" id="amp-${c.id}" class="form-input" value="${c.perf.amp}" style="width: 60px; padding: 0.25rem;"></td>
+            <td><input type="number" id="idle-${c.id}" class="form-input" value="${c.perf.idle}" style="width: 60px; padding: 0.25rem;"></td>
+            
+            <td><input type="number" id="temp-${c.id}" class="form-input" value="${c.mech.temp}" style="width: 60px; padding: 0.25rem;"></td>
+            <td><input type="number" id="vib_v-${c.id}" class="form-input" value="${c.mech.vib_v}" style="width: 60px; padding: 0.25rem;"></td>
+            <td><input type="number" id="vib_a-${c.id}" class="form-input" value="${c.mech.vib_a}" style="width: 60px; padding: 0.25rem;"></td>
+            
+            <td><input type="number" id="oil_p-${c.id}" class="form-input" value="${c.thermal.oil_p}" style="width: 60px; padding: 0.25rem;"></td>
+            <td><input type="number" id="sys_p-${c.id}" class="form-input" value="${c.thermal.sys_p}" style="width: 60px; padding: 0.25rem;"></td>
+            <td><input type="number" id="exhaust-${c.id}" class="form-input" value="${c.thermal.exhaust}" style="width: 60px; padding: 0.25rem;"></td>
+            
+            <td><button onclick="updateMachineConfig(${c.id})" class="btn" style="width: auto; padding: 0.25rem 0.75rem; font-size: 0.75rem;">Sauver</button></td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        console.error('Erreur chargement configs machines:', err);
+      }
+    };
+
+    // Fonction pour mettre à jour une config
+    window.updateMachineConfig = async (id) => {
+      const payload = {
+        id,
+        fuel: document.getElementById(`fuel-${id}`).value,
+        amp: document.getElementById(`amp-${id}`).value,
+        idle: document.getElementById(`idle-${id}`).value,
+        temp: document.getElementById(`temp-${id}`).value,
+        vib_v: document.getElementById(`vib_v-${id}`).value,
+        vib_a: document.getElementById(`vib_a-${id}`).value,
+        oil_p: document.getElementById(`oil_p-${id}`).value,
+        sys_p: document.getElementById(`sys_p-${id}`).value,
+        exhaust: document.getElementById(`exhaust-${id}`).value
+      };
+
+      try {
+        const response = await fetch('/update-machine-config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await response.json();
+        alert(data.message);
+      } catch (err) {
+        alert('Erreur lors de la mise à jour');
+      }
+    };
+
+    // Charger les configs au démarrage
+    loadMachineConfigs();
+
+    // Gestion du formulaire d'ajout de machine
+    const addMachineForm = document.getElementById('addMachineForm');
+    const addMachineBtn = document.getElementById('addMachineBtn');
+    const addMachineStatus = document.getElementById('addMachineStatus');
+
+    if (addMachineForm) {
+      addMachineForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const payload = {
+          machine_id: document.getElementById('machineId').value,
+          type_id: document.getElementById('machineType').value,
+          brand_id: document.getElementById('machineBrand').value || null,
+          localisation_id: document.getElementById('machineLoc').value || null,
+          niveau_elevation_machine: document.getElementById('machineElev').value || null,
+          date_achat: document.getElementById('machineDate').value || null
+        };
+
+        addMachineBtn.disabled = true;
+        addMachineStatus.textContent = 'Enregistrement...';
+        addMachineStatus.className = 'status-message';
+        addMachineStatus.style.display = 'block';
+
+        try {
+          const response = await fetch('/add-machine', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+
+          const data = await response.json();
+
+          if (response.ok) {
+            addMachineStatus.textContent = data.message;
+            addMachineStatus.classList.add('success');
+            addMachineForm.reset();
+          } else {
+            addMachineStatus.textContent = data.message || 'Une erreur est survenue.';
+            addMachineStatus.classList.add('error');
+          }
+        } catch (err) {
+          addMachineStatus.textContent = `Erreur réseau : ${err.message}`;
+          addMachineStatus.classList.add('error');
+        } finally {
+          addMachineBtn.disabled = false;
+          setTimeout(() => {
+            if (addMachineStatus.classList.contains('success')) {
+              addMachineStatus.style.display = 'none';
+            }
+          }, 3000);
+        }
+      });
+    }
+
+    // Fonction pour charger l'état du parc (télémétrie temps réel)
+    const loadEtatParc = async () => {
+      const grid = document.getElementById('etatParcGrid');
+      if (!grid) return;
+      try {
+        // Ajout d'un paramètre de cache-busting pour forcer le navigateur à toujours récupérer la nouvelle donnée
+        const response = await fetch('/get-latest-telemetry?t=' + new Date().getTime());
+        if (!response.ok) return;
+        const data = await response.json();
+        
+        grid.innerHTML = '';
+        const now = new Date();
+        
+        data.forEach(m => {
+          const mDate = new Date(m.timestamp);
+          const diffSec = (now - mDate) / 1000;
+          const isOnline = diffSec < 60; // Moins de 60s = en ligne
+          
+          let statusClass = isOnline ? 'status-online' : 'status-offline';
+          let statusText = isOnline ? 'En ligne' : 'Hors ligne';
+          
+          if (m.status && m.status !== 'Actif') {
+            statusClass = 'status-warning';
+            statusText = m.status;
+          }
+
+          const card = document.createElement('div');
+          card.className = 'card';
+          card.innerHTML = `
+            <h3>${m.machine_id}</h3>
+            <p>Statut <span class="${statusClass}"><i class="status-indicator ${statusClass}"></i>${statusText}</span></p>
+            <p>Temp. Huile <span>${m.temp}°C</span></p>
+            <p>Vitesse Cycle <span>${m.speed} s</span></p>
+            <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;">Maj: ${isOnline ? "À l'instant" : "Il y a " + Math.floor(diffSec/60) + " min"}</p>
+          `;
+          grid.appendChild(card);
+        });
+      } catch (err) {
+        console.error('Erreur chargement etat parc:', err);
+      }
+    };
+    
+    // Charger et rafraîchir toutes les 5s
+    loadEtatParc();
+    setInterval(() => {
+      const etatParcTab = document.getElementById('etat-parc');
+      if (etatParcTab && etatParcTab.classList.contains('active')) {
+        loadEtatParc();
+      }
+    }, 5000);
+
+    // Recharger les marques quand on change d'onglet vers Machines ou Marques
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        if (tab.dataset.tab === 'machines') {
+          loadBrands();
+          loadMachineTypes();
+          loadLocalisations();
+          loadMachinesList();
+        }
+        if (tab.dataset.tab === 'parametres') {
+          loadMachineConfigs();
+        }
+        if (tab.dataset.tab === 'configuration') {
+          loadProcessStatus();
+        }
+      });
+    });
+
+    // --- Gestion des processus en arrière-plan ---
+    const loadProcessStatus = async () => {
+      try {
+        const res = await fetch('/api/processes/status?t=' + new Date().getTime());
+        const data = await res.json();
+        
+        const pBadge = document.getElementById('producerStatus');
+        const cBadge = document.getElementById('consumerStatus');
+        
+        if (pBadge) {
+          pBadge.textContent = data.producer === 'running' ? 'Actif' : 'Arrêté';
+          pBadge.style.backgroundColor = data.producer === 'running' ? 'var(--success-color)' : 'var(--error-color)';
+          pBadge.style.color = 'white';
+        }
+        if (cBadge) {
+          cBadge.textContent = data.consumer === 'running' ? 'Actif' : 'Arrêté';
+          cBadge.style.backgroundColor = data.consumer === 'running' ? 'var(--success-color)' : 'var(--error-color)';
+          cBadge.style.color = 'white';
+        }
+      } catch(e) {
+        console.error("Erreur lecture statuts", e);
+      }
+    };
+
+    window.manageProcess = async (name, action) => {
+      try {
+        const res = await fetch(`/api/processes/${action}/${name}`, { method: 'POST' });
+        const data = await res.json();
+        
+        // Petite notification ou log
+        console.log(data.message);
+        
+        // Rafraîchir immédiatement
+        loadProcessStatus();
+      } catch(e) {
+        console.error("Erreur action processus", e);
+      }
+    };
+    
+    // Charger le statut au démarrage et toutes les 5s
+    loadProcessStatus();
+    setInterval(loadProcessStatus, 5000);
+
   </script>
 </body>
 </html>

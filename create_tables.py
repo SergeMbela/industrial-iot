@@ -10,14 +10,49 @@ except ImportError:
     )
 
 BASE_DIR = Path(__file__).resolve().parent
-SQL_FILE = BASE_DIR / "matrice.sql"
+ENV_FILE = BASE_DIR / ".env"
+
+
+def load_dotenv(path: Path) -> None:
+    if not path.exists():
+        return
+
+    with path.open("r", encoding="utf-8") as stream:
+        for line in stream:
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+
+            if line.startswith("export "):
+                line = line[len("export "):]
+
+            if "=" not in line:
+                continue
+
+            key, value = line.split("=", 1)
+            key = key.strip()
+            value = value.strip().strip('"').strip("'")
+            os.environ.setdefault(key, value)
+
+
+def get_env(keys, default=None):
+    for key in keys:
+        value = os.getenv(key)
+        if value is not None:
+            return value
+    return default
+
+
+load_dotenv(ENV_FILE)
+
+SQL_FILE = BASE_DIR / get_env(["SQL_FILE", "MATRICE_SQL_FILE"], "matrice.sql")
 
 DB_CONFIG = {
-    "host": os.getenv("PGHOST", "localhost"),
-    "port": int(os.getenv("PGPORT", 5455)),
-    "dbname": os.getenv("PGDATABASE", "industrial_iot"),
-    "user": os.getenv("PGUSER", "admin"),
-    "password": os.getenv("PGPASSWORD", "admin123"),
+    "host": get_env(["PGHOST", "POSTGRES_HOST"], "localhost"),
+    "port": int(get_env(["PGPORT", "POSTGRES_PORT"], "5455")),
+    "dbname": get_env(["PGDATABASE", "POSTGRES_DB"], "industrial_iot"),
+    "user": get_env(["PGUSER", "POSTGRES_USER"], "admin"),
+    "password": get_env(["PGPASSWORD", "POSTGRES_PASSWORD"], "admin123"),
 }
 
 
@@ -37,17 +72,21 @@ def create_tables():
         conn = psycopg2.connect(**DB_CONFIG)
         conn.autocommit = True
     except OperationalError as exc:
-        raise SystemExit(f"Impossible de se connecter à PostgreSQL : {exc}")
+        raise RuntimeError(f"Impossible de se connecter à PostgreSQL : {exc}")
 
     try:
         with conn.cursor() as cursor:
             cursor.execute(sql_code)
         print("Tables créées avec succès.")
     except Exception as exc:
-        raise SystemExit(f"Erreur lors de l'exécution du script SQL : {exc}")
+        raise RuntimeError(f"Erreur lors de l'exécution du script SQL : {exc}")
     finally:
         conn.close()
 
 
 if __name__ == "__main__":
-    create_tables()
+    try:
+        create_tables()
+    except Exception as e:
+        print(f"FATAL: {e}")
+        exit(1)
