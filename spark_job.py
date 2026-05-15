@@ -86,8 +86,33 @@ def main():
             avg("vibration_rms_mm_s").alias("vibration_moyenne"),
             count("*").alias("total_releves")
         ).orderBy(desc("temp_moyenne"))
-        
     stats_df.show()
+    
+    print("\n--- Sauvegarde des résultats dans PostgreSQL ---")
+    
+    # 1. Sauvegarde des anomalies
+    anomalies_df.write \
+        .format("jdbc") \
+        .option("url", JDBC_URL) \
+        .option("dbtable", "spark_stats_anomalies") \
+        .option("user", PG_USER) \
+        .option("password", PG_PASSWORD) \
+        .option("driver", "org.postgresql.Driver") \
+        .mode("overwrite") \
+        .save()
+    print("Table 'spark_stats_anomalies' mise à jour.")
+        
+    # 2. Sauvegarde des stats par modèle
+    stats_df.write \
+        .format("jdbc") \
+        .option("url", JDBC_URL) \
+        .option("dbtable", "spark_stats_models") \
+        .option("user", PG_USER) \
+        .option("password", PG_PASSWORD) \
+        .option("driver", "org.postgresql.Driver") \
+        .mode("overwrite") \
+        .save()
+    print("Table 'spark_stats_models' mise à jour.")
     
     print("\nAnalyse distribuée terminée avec succès !")
     

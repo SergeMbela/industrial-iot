@@ -180,7 +180,8 @@ CREATE TABLE IF NOT EXISTS sensor_data (
     filter_diff_pressure_bar DECIMAL(10, 2),
     
     ambient_temp DECIMAL(5, 2),
-    humidity_percent DECIMAL(5, 2)
+    humidity_percent DECIMAL(5, 2),
+    alert_label VARCHAR(100) DEFAULT 'Normal'
 );
 
 -- Données du système de ventilation
@@ -444,7 +445,8 @@ BEGIN
             turbo_boost_bar,
             filter_diff_pressure_bar,
             ambient_temp,
-            humidity_percent
+            humidity_percent,
+            alert_label
         )
         VALUES (
             m_row.machine_id,
@@ -473,7 +475,8 @@ BEGIN
             (random() * 1.8)::DECIMAL(10,2),
             
             (20 + random() * 15)::DECIMAL(5,2),
-            (30 + random() * 40)::DECIMAL(5,2)
+            (30 + random() * 40)::DECIMAL(5,2),
+            'Normal'
         );
     END LOOP;
 END $$;

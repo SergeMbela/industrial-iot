@@ -1,0 +1,60 @@
+{
+  "title": "Industrial IoT - Observabilité des Capteurs",
+  "tags": ["IoT", "Sensors", "Machines"],
+  "timezone": "browser",
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "Température de l'huile (°C)",
+      "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": "PostgreSQL-IoT",
+          "format": "time_series",
+          "rawSql": "SELECT timestamp AS \"time\", machine_id AS metric, oil_temp_c AS value FROM sensor_data WHERE $__timeFilter(timestamp) ORDER BY timestamp ASC"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Vibrations (mm/s)",
+      "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": "PostgreSQL-IoT",
+          "format": "time_series",
+          "rawSql": "SELECT timestamp AS \"time\", machine_id AS metric, vibration_rms_mm_s AS value FROM sensor_data WHERE $__timeFilter(timestamp) ORDER BY timestamp ASC"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Consommation de Carburant (L/h)",
+      "gridPos": { "x": 0, "y": 8, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": "PostgreSQL-IoT",
+          "format": "time_series",
+          "rawSql": "SELECT timestamp AS \"time\", machine_id AS metric, fuel_consumption_lh AS value FROM sensor_data WHERE $__timeFilter(timestamp) ORDER BY timestamp ASC"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Machines en Alerte",
+      "gridPos": { "x": 12, "y": 8, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": "PostgreSQL-IoT",
+          "format": "table",
+          "rawSql": "SELECT machine_id, alert_label FROM sensor_data WHERE alert_label != 'Normal' AND timestamp >= NOW() - INTERVAL '15 minutes'"
+        }
+      ]
+    }
+  ],
+  "refresh": "5s"
+}

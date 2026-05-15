@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="fr">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -9,6 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/static/css/style.css">
 </head>
+
 <body>
   <header>
     <h1>Industrial IoT Dashboard</h1>
@@ -25,20 +27,24 @@
   <main class="content">
     <section id="machines" class="tab-panel active" role="tabpanel">
       <h2 class="section-title">Parc Machines</h2>
-      
+
       <div class="sub-tabs" role="tablist">
         <button class="sub-tab-button active" data-subtab="etat-parc">Etat du parc</button>
         <button class="sub-tab-button" data-subtab="liste-machines">Liste des machines</button>
         <button class="sub-tab-button" data-subtab="nouvelle-machine">Nouvelle machine</button>
         <button class="sub-tab-button" data-subtab="maintenance">Maintenance</button>
         <button class="sub-tab-button" data-subtab="marques-sub">Marques</button>
-        <button class="sub-tab-button" data-subtab="statistiques">Statistiques</button>
+        <button class="sub-tab-button" data-subtab="statistiques">Statistiques Unitaire</button>
+        <button class="sub-tab-button" data-subtab="spark-stats">Big Data (Spark)</button>
+        <button class="sub-tab-button" data-subtab="predictif">Analyse Prédictive (IA)</button>
       </div>
 
       <div id="liste-machines" class="sub-tab-panel">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-          <h3 style="color: var(--text-muted); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em;">Répertoire complet du parc</h3>
-          <button onclick="loadMachinesList()" class="btn" style="width: auto; padding: 0.5rem 1rem; font-size: 0.75rem;">Actualiser</button>
+          <h3 style="color: var(--text-muted); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em;">
+            Répertoire complet du parc</h3>
+          <button onclick="loadMachinesList()" class="btn"
+            style="width: auto; padding: 0.5rem 1rem; font-size: 0.75rem;">Actualiser</button>
         </div>
         <div class="table-container">
           <table id="machinesTable">
@@ -66,21 +72,26 @@
       </div>
 
       <div id="etat-parc" class="sub-tab-panel active">
-        <h3 style="margin-bottom: 1rem; color: var(--text-muted); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em;">État du parc en temps réel</h3>
+        <h3
+          style="margin-bottom: 1rem; color: var(--text-muted); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em;">
+          État du parc en temps réel</h3>
         <div class="card-grid" id="etatParcGrid">
           <!-- Rempli par JS -->
         </div>
       </div>
 
       <div id="statistiques" class="sub-tab-panel">
-        <h3 style="margin-bottom: 1rem; color: var(--text-muted); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em;">Statistiques Historiques</h3>
+        <h3
+          style="margin-bottom: 1rem; color: var(--text-muted); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em;">
+          Statistiques Historiques</h3>
         <div class="card" style="margin-bottom: 2rem;">
           <div style="display: flex; gap: 1rem; align-items: center;">
             <label for="statMachineSelect" style="font-weight: 600;">Sélectionner une machine :</label>
             <select id="statMachineSelect" class="form-input" style="max-width: 300px; margin: 0;">
               <option value="">Chargement...</option>
             </select>
-            <button onclick="loadMachineStats()" class="btn" style="width: auto; padding: 0.5rem 1.5rem;">Analyser</button>
+            <button onclick="loadMachineStats()" class="btn"
+              style="width: auto; padding: 0.5rem 1.5rem;">Analyser</button>
           </div>
         </div>
 
@@ -89,24 +100,128 @@
             <div class="card" style="border-top: 4px solid var(--primary-color);">
               <h3 style="color: var(--text-muted); font-size: 0.85rem;">Température Huile</h3>
               <p style="font-size: 1.5rem; margin-top: 0.5rem;">Moy: <span id="statAvgTemp">--</span>°C</p>
-              <p style="font-size: 0.9rem;">Max: <span id="statMaxTemp" style="color: var(--error-color); font-weight: bold;">--</span>°C</p>
+              <p style="font-size: 0.9rem;">Max: <span id="statMaxTemp"
+                  style="color: var(--error-color); font-weight: bold;">--</span>°C</p>
             </div>
             <div class="card" style="border-top: 4px solid var(--primary-color);">
               <h3 style="color: var(--text-muted); font-size: 0.85rem;">Vibrations RMS</h3>
               <p style="font-size: 1.5rem; margin-top: 0.5rem;">Moy: <span id="statAvgVib">--</span> mm/s</p>
-              <p style="font-size: 0.9rem;">Max: <span id="statMaxVib" style="color: var(--error-color); font-weight: bold;">--</span> mm/s</p>
+              <p style="font-size: 0.9rem;">Max: <span id="statMaxVib"
+                  style="color: var(--error-color); font-weight: bold;">--</span> mm/s</p>
             </div>
             <div class="card" style="border-top: 4px solid var(--primary-color);">
               <h3 style="color: var(--text-muted); font-size: 0.85rem;">Consommation & Alertes</h3>
               <p style="font-size: 1.5rem; margin-top: 0.5rem;">Moy: <span id="statAvgFuel">--</span> L/h</p>
-              <p style="font-size: 0.9rem;">Anomalies: <span id="statAlertsCount" style="color: var(--warning-color); font-weight: bold;">--</span> (sur <span id="statTotalRec">--</span> cycles)</p>
+              <p style="font-size: 0.9rem;">Anomalies: <span id="statAlertsCount"
+                  style="color: var(--warning-color); font-weight: bold;">--</span> (sur <span
+                  id="statTotalRec">--</span> cycles)</p>
             </div>
           </div>
           <div class="card">
             <h3>Dernières anomalies détectées</h3>
-            <ul id="statAlertsList" style="margin-top: 1rem; color: var(--text-color); font-size: 0.9rem; padding-left: 1rem; line-height: 1.5;">
+            <ul id="statAlertsList"
+              style="margin-top: 1rem; color: var(--text-color); font-size: 0.9rem; padding-left: 1rem; line-height: 1.5;">
               <!-- Rempli par JS -->
             </ul>
+          </div>
+        </div>
+      </div>
+
+      <div id="spark-stats" class="sub-tab-panel">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+          <h3 style="color: var(--text-muted); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em;">
+            Analyse Distribuée (Cluster Spark)</h3>
+          <div>
+            <button onclick="runSparkJob()" class="btn" style="background-color: #8b5cf6; width: auto; padding: 0.5rem 1rem; font-size: 0.75rem; margin-right: 0.5rem;">▶ Lancer Analyse</button>
+            <button onclick="loadSparkStats()" class="btn"
+              style="width: auto; padding: 0.5rem 1rem; font-size: 0.75rem;">Actualiser</button>
+          </div>
+        </div>
+
+        <div id="sparkErrorMsg" class="notice"
+          style="display: none; background: rgba(239, 68, 68, 0.1); color: var(--error-color); border-color: var(--error-color);">
+          <!-- Rempli par JS -->
+        </div>
+
+        <div id="sparkResults" style="display: none;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem;">
+
+            <!-- Top Anomalies -->
+            <div class="card">
+              <h3 style="margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">🔥
+                Top 10 Anomalies Récurrentes</h3>
+              <div class="table-container">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Machine</th>
+                      <th>Type d'Alerte</th>
+                      <th>Occurrences</th>
+                    </tr>
+                  </thead>
+                  <tbody id="sparkAnomaliesBody">
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Stats Modèles -->
+            <div class="card">
+              <h3 style="margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">📊
+                Analyse par Modèle de Machine</h3>
+              <div class="table-container">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Modèle</th>
+                      <th title="Température Moyenne">Temp Moy.</th>
+                      <th title="Vibration Moyenne">Vib. Moy.</th>
+                      <th>Échantillons</th>
+                    </tr>
+                  </thead>
+                  <tbody id="sparkModelsBody">
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <div id="predictif" class="sub-tab-panel">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+          <h3 style="color: var(--text-muted); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em;">
+            Modèle de Machine Learning (Random Forest)</h3>
+          <div>
+            <button onclick="runPredictiveJob()" class="btn" style="background-color: #ec4899; width: auto; padding: 0.5rem 1rem; font-size: 0.75rem; margin-right: 0.5rem;">▶ Entraîner & Prédire</button>
+            <button onclick="loadPredictiveStats()" class="btn"
+              style="width: auto; padding: 0.5rem 1rem; font-size: 0.75rem;">Actualiser</button>
+          </div>
+        </div>
+
+        <div id="predictiveErrorMsg" class="notice"
+          style="display: none; background: rgba(239, 68, 68, 0.1); color: var(--error-color); border-color: var(--error-color);">
+        </div>
+
+        <div id="predictiveResults" style="display: none;">
+          <div class="card" style="margin-bottom: 2rem;">
+             <h3 style="margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">🚨 Machines à haut risque d'anomalie</h3>
+             <p style="color: var(--text-muted); margin-bottom: 1rem;">Basé sur les derniers relevés et l'apprentissage automatique, ces machines sont susceptibles de tomber en panne.</p>
+             <div class="table-container">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Machine</th>
+                      <th>Anomalies Prédites</th>
+                      <th>Total des évaluations récentes</th>
+                      <th>Niveau de risque</th>
+                    </tr>
+                  </thead>
+                  <tbody id="predictiveTableBody">
+                  </tbody>
+                </table>
+             </div>
           </div>
         </div>
       </div>
@@ -157,28 +272,71 @@
       </div>
 
       <div id="maintenance" class="sub-tab-panel">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+          <h3 style="color: var(--text-muted); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em;">
+            Journal de Maintenance</h3>
+        </div>
+        
         <div class="card-grid">
-          <div class="card">
-            <h3>Prochaines interventions</h3>
-            <p>BRO-001 <span>Demain, 08:00</span></p>
-            <p>PMP-002 <span>18 Mai, 10:30</span></p>
-            <p>FOR-003 <span>22 Mai, 14:00</span></p>
+          <div class="card" style="grid-column: span 1;">
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1.5rem;">
+              <h3>Loguer une intervention</h3>
+              <span class="card-title-badge" style="background-color: var(--warning-color);">Technicien</span>
+            </div>
+            <form id="addMaintenanceForm">
+              <div class="form-group">
+                <label for="maintMachineId">Machine ID</label>
+                <select id="maintMachineId" class="form-input" required>
+                  <option value="">Chargement...</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="maintDate">Date d'intervention</label>
+                <input type="date" id="maintDate" class="form-input" required>
+              </div>
+              <div class="form-group">
+                <label for="maintTech">Technicien</label>
+                <input type="text" id="maintTech" class="form-input" placeholder="ex: Jean Dupont" required>
+              </div>
+              <div class="form-group">
+                <label for="maintCost">Coût des pièces (€)</label>
+                <input type="number" step="0.01" id="maintCost" class="form-input" placeholder="0.00">
+              </div>
+              <div class="form-group">
+                <label for="maintObs">Observations / Pièces remplacées</label>
+                <textarea id="maintObs" class="form-input" rows="3" placeholder="Description de l'intervention..." required></textarea>
+              </div>
+              <button type="submit" id="addMaintBtn" class="btn">Enregistrer l'intervention</button>
+            </form>
+            <div id="maintStatus" class="status-message"></div>
           </div>
-          <div class="card">
-            <h3>Statistiques Maintenance</h3>
-            <p>Taux de panne <span>1.2 %</span></p>
-            <p>MTBF <span>450 h</span></p>
-            <p>MTTR <span>2.5 h</span></p>
-          </div>
-          <div class="card">
-            <h3>Alertes Maintenance</h3>
-            <p>BRO-001 <span class="status-warning">Vibration élevée</span></p>
-            <p>PMP-054 <span class="status-warning">Filtre à changer</span></p>
+          
+          <div class="card" style="grid-column: span 2;">
+            <h3>Historique récent</h3>
+            <p style="color: var(--text-muted); margin-bottom: 1rem;">Les interventions remettent automatiquement le statut de la machine à "Actif".</p>
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Machine</th>
+                    <th>Technicien</th>
+                    <th>Observations</th>
+                    <th>Coût (€)</th>
+                  </tr>
+                </thead>
+                <tbody id="maintenanceTableBody">
+                  <tr><td colspan="5">Chargement...</td></tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
       <div id="marques-sub" class="sub-tab-panel">
-        <h3 style="margin-bottom: 1rem; color: var(--text-muted); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em;">Gestion des Marques</h3>
+        <h3
+          style="margin-bottom: 1rem; color: var(--text-muted); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em;">
+          Gestion des Marques</h3>
         <div class="card-grid">
           <div class="card">
             <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1.5rem;">
@@ -213,7 +371,7 @@
         </div>
       </div>
     </section>
-    
+
 
     <section id="parametres" class="tab-panel" role="tabpanel">
       <h2 class="section-title">Paramètres</h2>
@@ -246,8 +404,9 @@
       <div id="param-valeurs" class="sub-tab-panel">
         <div class="card" style="max-width: 100%;">
           <h3>Configuration des Valeurs Machines</h3>
-          <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Définissez les seuils critiques et les paramètres de performance par type de machine.</p>
-          
+          <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Définissez les seuils critiques et les paramètres
+            de performance par type de machine.</p>
+
           <div class="table-container">
             <table>
               <thead>
@@ -255,7 +414,8 @@
                   <th rowspan="2">Type / Marque</th>
                   <th colspan="3" style="text-align: center; background: rgba(14, 165, 233, 0.1);">Performance</th>
                   <th colspan="3" style="text-align: center; background: rgba(16, 185, 129, 0.1);">Mécanique</th>
-                  <th colspan="3" style="text-align: center; background: rgba(245, 158, 11, 0.1);">Thermique/Pression</th>
+                  <th colspan="3" style="text-align: center; background: rgba(245, 158, 11, 0.1);">Thermique/Pression
+                  </th>
                   <th rowspan="2">Action</th>
                 </tr>
                 <tr>
@@ -289,13 +449,17 @@
         </div>
         <div class="card">
           <h3>Alertes récentes (Dernière heure)</h3>
-          <p><span id="monRecentAlerts" style="font-size: 1.5rem; font-weight: bold; color: var(--error-color);">--</span> anomalies détectées</p>
-          <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem;">Consultez les détails dans Machines > Statistiques</p>
+          <p><span id="monRecentAlerts"
+              style="font-size: 1.5rem; font-weight: bold; color: var(--error-color);">--</span> anomalies détectées</p>
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem;">Consultez les détails dans
+            Machines > Statistiques</p>
         </div>
         <div class="card">
           <h3>Disponibilité du parc</h3>
-          <p>Machines communicantes : <strong id="monOnlineMachines">--</strong> / <strong id="monTotalMachines">--</strong></p>
-          <p>Taux de connectivité : <span id="monAvailRate" style="font-size: 1.2rem; font-weight: bold;">--</span> %</p>
+          <p>Machines communicantes : <strong id="monOnlineMachines">--</strong> / <strong
+              id="monTotalMachines">--</strong></p>
+          <p>Taux de connectivité : <span id="monAvailRate" style="font-size: 1.2rem; font-weight: bold;">--</span> %
+          </p>
         </div>
       </div>
     </section>
@@ -321,11 +485,12 @@
           <p>Version UI : 1.0.0</p>
         </div>
       </div>
-      
+
       <div class="card" style="margin-top: 18px;">
         <h3>Services de Télémétrie</h3>
-        <p style="color: var(--text-muted); margin-bottom: 1rem;">Gérez les scripts d'arrière-plan sans quitter l'interface.</p>
-        
+        <p style="color: var(--text-muted); margin-bottom: 1rem;">Gérez les scripts d'arrière-plan sans quitter
+          l'interface.</p>
+
         <div style="display: flex; gap: 2rem;">
           <!-- Producer -->
           <div style="flex: 1; padding: 1rem; border: 1px solid var(--border-color); border-radius: 8px;">
@@ -334,8 +499,10 @@
               <span id="producerStatus" class="badge">Inconnu</span>
             </div>
             <div style="display: flex; gap: 0.5rem;">
-              <button onclick="manageProcess('producer', 'start')" class="btn" style="flex: 1; padding: 0.5rem; background: var(--success-color);">▶ Démarrer</button>
-              <button onclick="manageProcess('producer', 'stop')" class="btn" style="flex: 1; padding: 0.5rem; background: var(--error-color);">■ Arrêter</button>
+              <button onclick="manageProcess('producer', 'start')" class="btn"
+                style="flex: 1; padding: 0.5rem; background: var(--success-color);">▶ Démarrer</button>
+              <button onclick="manageProcess('producer', 'stop')" class="btn"
+                style="flex: 1; padding: 0.5rem; background: var(--error-color);">■ Arrêter</button>
             </div>
           </div>
 
@@ -346,8 +513,10 @@
               <span id="consumerStatus" class="badge">Inconnu</span>
             </div>
             <div style="display: flex; gap: 0.5rem;">
-              <button onclick="manageProcess('consumer', 'start')" class="btn" style="flex: 1; padding: 0.5rem; background: var(--success-color);">▶ Démarrer</button>
-              <button onclick="manageProcess('consumer', 'stop')" class="btn" style="flex: 1; padding: 0.5rem; background: var(--error-color);">■ Arrêter</button>
+              <button onclick="manageProcess('consumer', 'start')" class="btn"
+                style="flex: 1; padding: 0.5rem; background: var(--success-color);">▶ Démarrer</button>
+              <button onclick="manageProcess('consumer', 'stop')" class="btn"
+                style="flex: 1; padding: 0.5rem; background: var(--error-color);">■ Arrêter</button>
             </div>
           </div>
         </div>
@@ -363,7 +532,8 @@
         <div id="createTablesStatus" class="status-message"></div>
       </div>
       <div class="notice">
-        Personnalisez cette interface en remplaçant les contenus de chaque section par des données réelles ou des appels vers votre backend Python.
+        Personnalisez cette interface en remplaçant les contenus de chaque section par des données réelles ou des appels
+        vers votre backend Python.
       </div>
     </section>
   </main>
@@ -406,8 +576,14 @@
         // Charger les données spécifiques si nécessaire
         if (tab.dataset.subtab === 'etat-parc') loadEtatParc();
         if (tab.dataset.subtab === 'statistiques') loadStatMachinesDropdown();
+        if (tab.dataset.subtab === 'spark-stats') loadSparkStats();
         if (tab.dataset.subtab === 'liste-machines') loadMachinesList();
         if (tab.dataset.subtab === 'param-valeurs') loadMachineConfigs();
+        if (tab.dataset.subtab === 'predictif') loadPredictiveStats();
+        if (tab.dataset.subtab === 'maintenance') {
+          loadMaintenanceMachinesDropdown();
+          loadMaintenanceLogs();
+        }
       });
     });
 
@@ -479,7 +655,7 @@
     if (addBrandForm) {
       addBrandForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        
+
         const name = document.getElementById('brandName').value;
         const country = document.getElementById('brandCountry').value;
         const support_contact = document.getElementById('brandContact').value;
@@ -530,10 +706,10 @@
       try {
         const response = await fetch('/get-brands');
         const brands = await response.json();
-        
+
         // Garder seulement la première option par défaut
         select.innerHTML = '<option value="">Sélectionner une marque...</option>';
-        
+
         brands.forEach(brand => {
           const option = document.createElement('option');
           option.value = brand.id;
@@ -545,7 +721,7 @@
       }
     };
 
-        // Recharger les marques au démarrage
+    // Recharger les marques au démarrage
     loadBrands();
 
     // Fonction pour charger les types de machines
@@ -556,9 +732,9 @@
       try {
         const response = await fetch('/get-machine-types');
         const types = await response.json();
-        
+
         select.innerHTML = '<option value="">Sélectionner un type...</option>';
-        
+
         types.forEach(type => {
           const option = document.createElement('option');
           option.value = type.id;
@@ -581,9 +757,9 @@
       try {
         const response = await fetch('/get-localisations');
         const locs = await response.json();
-        
+
         select.innerHTML = '<option value="">Sélectionner une zone...</option>';
-        
+
         locs.forEach(loc => {
           const option = document.createElement('option');
           option.value = loc.id;
@@ -607,16 +783,16 @@
       const pageInfo = document.getElementById('pageInfo');
       const prevBtn = document.getElementById('prevPage');
       const nextBtn = document.getElementById('nextPage');
-      
+
       if (!tbody) return;
 
       try {
         const response = await fetch(`/get-machines?page=${page}&per_page=10`);
         const data = await response.json();
         const machines = data.machines;
-        
+
         tbody.innerHTML = '';
-        
+
         machines.forEach(m => {
           const tr = document.createElement('tr');
           tr.innerHTML = `
@@ -662,9 +838,9 @@
         const response = await fetch('/get-machine-configs');
         const configs = await response.json();
         console.log("Configs received:", configs);
-        
+
         tbody.innerHTML = '';
-        
+
         configs.forEach(c => {
           const tr = document.createElement('tr');
           tr.innerHTML = `
@@ -787,23 +963,23 @@
         const response = await fetch('/get-latest-telemetry?t=' + new Date().getTime());
         if (!response.ok) return;
         const data = await response.json();
-        
+
         grid.innerHTML = '';
         const now = new Date();
-        
+
         data.forEach(m => {
           const mDate = new Date(m.timestamp);
           const diffSec = (now - mDate) / 1000;
           const isOnline = diffSec < 60; // Moins de 60s = en ligne
-          
+
           let statusClass = isOnline ? 'status-online' : 'status-offline';
           let statusText = isOnline ? 'En ligne' : 'Hors ligne';
-          
+
           if (m.status && m.status !== 'Actif') {
             statusClass = 'status-warning';
             statusText = m.status;
           }
-          
+
           let tempStyle = '';
           let tempWarning = '';
           if (m.temp > m.temp_max) {
@@ -828,7 +1004,7 @@
             <p>Temp. Huile <span style="${tempStyle}">${m.temp}°C ${tempWarning}</span></p>
             <p>Vitesse Cycle <span>${m.speed} s</span></p>
             ${alertHtml}
-            <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;">Maj: ${isOnline ? "À l'instant" : "Il y a " + Math.floor(diffSec/60) + " min"}</p>
+            <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;">Maj: ${isOnline ? "À l'instant" : "Il y a " + Math.floor(diffSec / 60) + " min"}</p>
           `;
           grid.appendChild(card);
         });
@@ -836,7 +1012,7 @@
         console.error('Erreur chargement etat parc:', err);
       }
     };
-    
+
     // Charger et rafraîchir toutes les 5s
     loadEtatParc();
     setInterval(() => {
@@ -872,10 +1048,10 @@
       try {
         const res = await fetch('/api/processes/status?t=' + new Date().getTime());
         const data = await res.json();
-        
+
         const pBadge = document.getElementById('producerStatus');
         const cBadge = document.getElementById('consumerStatus');
-        
+
         if (pBadge) {
           pBadge.textContent = data.producer === 'running' ? 'Actif' : 'Arrêté';
           pBadge.style.backgroundColor = data.producer === 'running' ? 'var(--success-color)' : 'var(--error-color)';
@@ -886,7 +1062,7 @@
           cBadge.style.backgroundColor = data.consumer === 'running' ? 'var(--success-color)' : 'var(--error-color)';
           cBadge.style.color = 'white';
         }
-      } catch(e) {
+      } catch (e) {
         console.error("Erreur lecture statuts", e);
       }
     };
@@ -895,17 +1071,17 @@
       try {
         const res = await fetch(`/api/processes/${action}/${name}`, { method: 'POST' });
         const data = await res.json();
-        
+
         // Petite notification ou log
         console.log(data.message);
-        
+
         // Rafraîchir immédiatement
         loadProcessStatus();
-      } catch(e) {
+      } catch (e) {
         console.error("Erreur action processus", e);
       }
     };
-    
+
     // Charger le statut au démarrage et toutes les 5s
     loadProcessStatus();
     setInterval(loadProcessStatus, 5000);
@@ -936,16 +1112,16 @@
         alert('Veuillez sélectionner une machine');
         return;
       }
-      
+
       try {
         const res = await fetch(`/api/machine-stats/${machineId}`);
         const data = await res.json();
-        
+
         if (!res.ok) {
           alert(data.message || 'Erreur');
           return;
         }
-        
+
         document.getElementById('statsResults').style.display = 'block';
         document.getElementById('statAvgTemp').textContent = data.avg_temp;
         document.getElementById('statMaxTemp').textContent = data.max_temp;
@@ -954,7 +1130,7 @@
         document.getElementById('statAvgFuel').textContent = data.avg_fuel;
         document.getElementById('statAlertsCount').textContent = data.alerts_count;
         document.getElementById('statTotalRec').textContent = data.total_records;
-        
+
         const list = document.getElementById('statAlertsList');
         list.innerHTML = '';
         if (data.recent_alerts && data.recent_alerts.length > 0) {
@@ -972,54 +1148,301 @@
         alert("Erreur lors du chargement des statistiques");
       }
     };
+      // --- Spark Stats ---
+      window.loadSparkStats = async () => {
+        try {
+          const res = await fetch('/api/spark-stats?t=' + new Date().getTime());
+          const data = await res.json();
 
-    // --- Global Monitoring ---
-    const loadGlobalMonitoring = async () => {
-      try {
-        const res = await fetch('/api/global-monitoring?t=' + new Date().getTime());
-        if (!res.ok) return;
-        const data = await res.json();
-        
-        document.getElementById('monTotalRecords').textContent = data.total_records.toLocaleString('fr-FR');
-        
-        if (data.last_update) {
-          const mDate = new Date(data.last_update);
-          const diffSec = Math.floor((new Date() - mDate) / 1000);
-          if (diffSec < 60) {
-            document.getElementById('monLastUpdate').textContent = `Il y a ${diffSec} sec`;
-            document.getElementById('monLastUpdate').style.color = 'var(--success-color)';
-          } else {
-            document.getElementById('monLastUpdate').textContent = `Il y a ${Math.floor(diffSec/60)} min`;
-            document.getElementById('monLastUpdate').style.color = 'var(--error-color)';
+          const errorDiv = document.getElementById('sparkErrorMsg');
+          const resultsDiv = document.getElementById('sparkResults');
+
+          if (!res.ok || data.status === 'error') {
+            errorDiv.style.display = 'block';
+            resultsDiv.style.display = 'none';
+            errorDiv.textContent = data.message || "Erreur inconnue";
+            return;
           }
-        } else {
-          document.getElementById('monLastUpdate').textContent = 'Jamais';
-        }
-        
-        document.getElementById('monRecentAlerts').textContent = data.recent_alerts;
-        document.getElementById('monOnlineMachines').textContent = data.online_machines;
-        document.getElementById('monTotalMachines').textContent = data.total_machines;
-        
-        const rate = data.total_machines > 0 ? (data.online_machines / data.total_machines * 100).toFixed(1) : 0;
-        const rateSpan = document.getElementById('monAvailRate');
-        rateSpan.textContent = rate;
-        if (rate >= 90) rateSpan.style.color = 'var(--success-color)';
-        else if (rate >= 50) rateSpan.style.color = 'var(--warning-color)';
-        else rateSpan.style.color = 'var(--error-color)';
-        
-      } catch (err) {
-        console.error("Erreur chargement monitoring global", err);
-      }
-    };
 
-    // Rafraîchir les tabs dynamiques en arrière-plan
-    setInterval(() => {
-      const monTab = document.getElementById('monitoring');
-      if (monTab && monTab.classList.contains('active')) {
-        loadGlobalMonitoring();
+          errorDiv.style.display = 'none';
+          resultsDiv.style.display = 'block';
+
+          // Remplir la table des anomalies
+          const tbodyAnomalies = document.getElementById('sparkAnomaliesBody');
+          tbodyAnomalies.innerHTML = '';
+          data.anomalies.forEach(a => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+            <td><strong>${a.machine_id}</strong></td>
+            <td style="color: var(--error-color);">${a.alert_label}</td>
+            <td style="font-weight: bold;">${a.count}</td>
+          `;
+            tbodyAnomalies.appendChild(tr);
+          });
+
+          // Remplir la table des modèles
+          const tbodyModels = document.getElementById('sparkModelsBody');
+          tbodyModels.innerHTML = '';
+          data.models.forEach(m => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+            <td>${m.type} ${m.brand}</td>
+            <td>${m.temp} °C</td>
+            <td>${m.vib}</td>
+            <td>${m.total.toLocaleString('fr-FR')}</td>
+          `;
+            tbodyModels.appendChild(tr);
+          });
+
+        } catch (err) {
+          console.error("Erreur chargement Spark Stats", err);
+        }
+      };
+
+      // --- Launch Spark Job ---
+      window.runSparkJob = async () => {
+        try {
+          const btn = event.target;
+          const oldText = btn.textContent;
+          btn.textContent = "⏳ Lancement...";
+          btn.disabled = true;
+          btn.style.opacity = "0.7";
+          
+          const res = await fetch('/api/run-spark-job', { method: 'POST' });
+          const data = await res.json();
+          
+          if (data.status === 'success') {
+            alert("✅ " + data.message + "\n\nLe calcul prend environ 10 à 20 secondes. Cliquez sur 'Actualiser' pour voir le résultat.");
+          } else {
+            alert("❌ Erreur: " + data.message);
+          }
+          
+          btn.textContent = oldText;
+          btn.disabled = false;
+          btn.style.opacity = "1";
+        } catch (err) {
+          console.error(err);
+          alert("Erreur de connexion.");
+        }
+      };
+
+      // --- Predictive Stats ---
+      window.loadPredictiveStats = async () => {
+        try {
+          const res = await fetch('/api/predictive-stats?t=' + new Date().getTime());
+          const data = await res.json();
+
+          const errorDiv = document.getElementById('predictiveErrorMsg');
+          const resultsDiv = document.getElementById('predictiveResults');
+
+          if (!res.ok || data.status === 'error') {
+            errorDiv.style.display = 'block';
+            resultsDiv.style.display = 'none';
+            errorDiv.textContent = data.message || "Erreur inconnue";
+            return;
+          }
+
+          errorDiv.style.display = 'none';
+          resultsDiv.style.display = 'block';
+
+          const tbody = document.getElementById('predictiveTableBody');
+          tbody.innerHTML = '';
+          data.data.forEach(m => {
+            const riskRatio = m.anomalies / m.total;
+            let riskLevel = '<span class="badge badge-green">Faible</span>';
+            if (riskRatio > 0.5) riskLevel = '<span class="badge badge-red" style="background-color: var(--error-color);">Critique</span>';
+            else if (riskRatio > 0.2) riskLevel = '<span class="badge badge-orange" style="background-color: var(--warning-color);">Modéré</span>';
+            
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+            <td><strong>${m.machine_id}</strong></td>
+            <td style="color: ${riskRatio > 0.2 ? 'var(--error-color)' : 'inherit'}; font-weight: bold;">${m.anomalies}</td>
+            <td>${m.total}</td>
+            <td>${riskLevel}</td>
+          `;
+            tbody.appendChild(tr);
+          });
+
+        } catch (err) {
+          console.error("Erreur chargement Predictive Stats", err);
+        }
+      };
+
+      // --- Maintenance Management ---
+      const loadMaintenanceMachinesDropdown = async () => {
+        const select = document.getElementById('maintMachineId');
+        if (!select || select.options.length > 1) return;
+        try {
+          const response = await fetch('/get-machines?page=1&per_page=1000');
+          const data = await response.json();
+          select.innerHTML = '<option value="">Sélectionner une machine...</option>';
+          data.machines.forEach(m => {
+            const opt = document.createElement('option');
+            opt.value = m.id;
+            opt.textContent = `${m.id} (${m.status})`;
+            if (m.status !== 'Actif') {
+              opt.style.color = 'var(--error-color)';
+              opt.style.fontWeight = 'bold';
+            }
+            select.appendChild(opt);
+          });
+        } catch (err) {
+          console.error("Erreur chargement dropdown maintenance", err);
+        }
+      };
+
+      const loadMaintenanceLogs = async () => {
+        const tbody = document.getElementById('maintenanceTableBody');
+        if (!tbody) return;
+        try {
+          const res = await fetch('/api/maintenance-logs?t=' + new Date().getTime());
+          const data = await res.json();
+          tbody.innerHTML = '';
+          if (data.data && data.data.length > 0) {
+            data.data.forEach(log => {
+              const tr = document.createElement('tr');
+              tr.innerHTML = `
+                <td>${log.date}</td>
+                <td><strong>${log.machine_id}</strong></td>
+                <td>${log.technicien}</td>
+                <td style="max-width: 300px; white-space: normal;">${log.obs}</td>
+                <td>${log.cout.toFixed(2)}</td>
+              `;
+              tbody.appendChild(tr);
+            });
+          } else {
+            tbody.innerHTML = '<tr><td colspan="5">Aucune intervention enregistrée.</td></tr>';
+          }
+        } catch (err) {
+          console.error("Erreur chargement logs de maintenance", err);
+        }
+      };
+
+      const maintForm = document.getElementById('addMaintenanceForm');
+      if (maintForm) {
+        // Set today's date as default
+        document.getElementById('maintDate').valueAsDate = new Date();
+        
+        maintForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const btn = document.getElementById('addMaintBtn');
+          const status = document.getElementById('maintStatus');
+          
+          const payload = {
+            machine_id: document.getElementById('maintMachineId').value,
+            date: document.getElementById('maintDate').value,
+            technicien: document.getElementById('maintTech').value,
+            cout: parseFloat(document.getElementById('maintCost').value) || 0,
+            observations: document.getElementById('maintObs').value
+          };
+          
+          btn.disabled = true;
+          status.className = 'status-message active';
+          status.textContent = 'Enregistrement...';
+          
+          try {
+            const res = await fetch('/api/add-maintenance-log', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            
+            if (res.ok) {
+              status.classList.add('success');
+              status.textContent = data.message;
+              maintForm.reset();
+              document.getElementById('maintDate').valueAsDate = new Date();
+              loadMaintenanceLogs(); // Refresh the table
+            } else {
+              status.classList.add('error');
+              status.textContent = data.message;
+            }
+          } catch (err) {
+            status.classList.add('error');
+            status.textContent = 'Erreur réseau';
+          } finally {
+            btn.disabled = false;
+            setTimeout(() => { status.className = 'status-message'; }, 3000);
+          }
+        });
       }
-    }, 5000);
+      
+      // --- Launch Predictive Job ---
+      window.runPredictiveJob = async () => {
+        try {
+          const btn = event.target;
+          const oldText = btn.textContent;
+          btn.textContent = "⏳ Entraînement...";
+          btn.disabled = true;
+          btn.style.opacity = "0.7";
+          
+          const res = await fetch('/api/run-predictive-job', { method: 'POST' });
+          const data = await res.json();
+          
+          if (data.status === 'success') {
+            alert("✅ " + data.message + "\\n\\nL'apprentissage peut prendre de 15 à 30 secondes. Cliquez sur 'Actualiser' ensuite.");
+          } else {
+            alert("❌ Erreur: " + data.message);
+          }
+          
+          btn.textContent = oldText;
+          btn.disabled = false;
+          btn.style.opacity = "1";
+        } catch (err) {
+          console.error(err);
+          alert("Erreur de connexion.");
+        }
+      };
+
+      // --- Global Monitoring ---
+      const loadGlobalMonitoring = async () => {
+        try {
+          const res = await fetch('/api/global-monitoring?t=' + new Date().getTime());
+          if (!res.ok) return;
+          const data = await res.json();
+
+          document.getElementById('monTotalRecords').textContent = data.total_records.toLocaleString('fr-FR');
+
+          if (data.last_update) {
+            const mDate = new Date(data.last_update);
+            const diffSec = Math.floor((new Date() - mDate) / 1000);
+            if (diffSec < 60) {
+              document.getElementById('monLastUpdate').textContent = `Il y a ${diffSec} sec`;
+              document.getElementById('monLastUpdate').style.color = 'var(--success-color)';
+            } else {
+              document.getElementById('monLastUpdate').textContent = `Il y a ${Math.floor(diffSec / 60)} min`;
+              document.getElementById('monLastUpdate').style.color = 'var(--error-color)';
+            }
+          } else {
+            document.getElementById('monLastUpdate').textContent = 'Jamais';
+          }
+
+          document.getElementById('monRecentAlerts').textContent = data.recent_alerts;
+          document.getElementById('monOnlineMachines').textContent = data.online_machines;
+          document.getElementById('monTotalMachines').textContent = data.total_machines;
+
+          const rate = data.total_machines > 0 ? (data.online_machines / data.total_machines * 100).toFixed(1) : 0;
+          const rateSpan = document.getElementById('monAvailRate');
+          rateSpan.textContent = rate;
+          if (rate >= 90) rateSpan.style.color = 'var(--success-color)';
+          else if (rate >= 50) rateSpan.style.color = 'var(--warning-color)';
+          else rateSpan.style.color = 'var(--error-color)';
+
+        } catch (err) {
+          console.error("Erreur chargement monitoring global", err);
+        }
+      };
+
+      // Rafraîchir les tabs dynamiques en arrière-plan
+      setInterval(() => {
+        const monTab = document.getElementById('monitoring');
+        if (monTab && monTab.classList.contains('active')) {
+          loadGlobalMonitoring();
+        }
+      }, 5000);
 
   </script>
 </body>
+
 </html>

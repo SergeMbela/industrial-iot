@@ -452,7 +452,138 @@ def get_global_monitoring():
             conn.close()
 
 
+@app.route("/api/spark-stats", methods=["GET"])
+def get_spark_stats():
+    try:
+        conn = psycopg2.connect(**DB_CONFIG)
+        with conn.cursor() as cursor:
+            # Stats Anomalies
+            cursor.execute("SELECT machine_id, alert_label, nombre_alertes FROM spark_stats_anomalies ORDER BY nombre_alertes DESC LIMIT 10")
+            anomalies = [{"machine_id": r[0], "alert_label": r[1], "count": r[2]} for r in cursor.fetchall()]
+            
+            # Stats Modèles
+            # On joint machine_types et brands pour avoir les noms
+            cursor.execute("""
+                SELECT t.name, b.name, s.temp_moyenne, s.vibration_moyenne, s.total_releves 
+                FROM spark_stats_models s
+                JOIN machine_types t ON s.type_id = t.type_id
+                LEFT JOIN brands b ON s.brand_id = b.brand_id
+                ORDER BY s.temp_moyenne DESC
+            """)
+            models = [{"type": r[0], "brand": r[1] or "", "temp": round(r[2], 2), "vib": round(r[3], 2), "total": r[4]} for r in cursor.fetchall()]
+
+        return jsonify({
+            "status": "success",
+            "anomalies": anomalies,
+            "models": models
+        })
+    except psycopg2.errors.UndefinedTable:
+        # Si la table n'existe pas encore (Spark n'a pas encore tourné)
+        if 'conn' in locals():
+            conn.rollback()
+        return jsonify({"status": "error", "message": "Les statistiques Spark n'ont pas encore été générées. Lancez le job Spark d'abord."}), 200
+    except Exception as exc:
+        return jsonify({"status": "error", "message": str(exc)}), 500
+    finally:
+        if 'conn' in locals():
+            conn.close()
+
+@app.route("/api/run-spark-job", methods=["POST"])
+def run_spark_job():
+    try:
+        cmd = [
+            "docker", "exec", "spark-master",
+            "/opt/spark/bin/spark-submit",
+            "--packages", "org.postgresql:postgresql:42.6.0",
+            "--conf", "spark.jars.ivy=/tmp/ivy",
+            "/app/spark_job.py"
+        ]
+        
+        # Exécution en asynchrone pour ne pas bloquer l'UI
+        subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        
+        return jsonify({
+            "status": "success", 
+            "message": "Le job Spark a été soumis au cluster. Les résultats seront bientôt disponibles."
+        })
+    except Exception as exc:
+        return jsonify({"status": "error", "message": str(exc)}), 500
+
+@app.route("/api/run-predictive-job", methods=["POST"])
+def run_predictive_job():
+    try:
+        cmd = [
+            "docker", "exec", "spark-master",
+            "/opt/spark/bin/spark-submit",
+            "--packages", "org.postgresql:postgresql:42.6.0",
+            "--conf", "spark.jars.ivy=/tmp/ivy",
+            "/app/predictive_job.py"
+        ]
+        subprocess.Popen(cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        return jsonify({
+            "status": "success", 
+            "message": "Le job prédictif a été lancé sur le cluster Spark."
+        })
+    except Exception as exc:
+        return jsonify({"status": "error", "message": str(exc)}), 500
+
+@app.route("/api/predictive-stats", methods=["GET"])
+def get_predictive_stats():
+    try:
+        conn = psycopg2.connect(**DB_CONFIG)
+        with conn.cursor() as cursor:
+            cursor.execute("""
+                SELECT machine_id, COUNT(*) as num_predictions,
+                       SUM(CASE WHEN predicted_anomaly_flag = 1.0 THEN 1 ELSE 0 END) as anomalies_predites
+                FROM predictive_alerts
+                GROUP BY machine_id
+                ORDER BY anomalies_predites DESC
+                LIMIT 10
+            """)
+            stats = [{"machine_id": r[0], "total": r[1], "anomalies": r[2]} for r in cursor.fetchall()]
+        return jsonify({"status": "success", "data": stats})
+    except psycopg2.errors.UndefinedTable:
+        if 'conn' in locals(): conn.rollback()
+        return jsonify({"status": "error", "message": "Les prédictions ne sont pas encore générées. Lancez le job prédictif."}), 200
+    except Exception as exc:
+        return jsonify({"status": "error", "message": str(exc)}), 500
+
+
+@app.route("/api/maintenance-logs", methods=["GET"])
+def get_maintenance_logs():
+    try:
+        conn = psycopg2.connect(**DB_CONFIG)
+        with conn.cursor() as cursor:
+            cursor.execute("""
+                SELECT log_id, machine_id, date_intervention, technicien, cout_pieces, observations
+                FROM maintenance_log
+                ORDER BY date_intervention DESC
+                LIMIT 20
+            """)
+            logs = [{"id": r[0], "machine_id": r[1], "date": r[2].strftime("%Y-%m-%d") if r[2] else "", "technicien": r[3], "cout": float(r[4]) if r[4] else 0, "obs": r[5]} for r in cursor.fetchall()]
+        return jsonify({"status": "success", "data": logs})
+    except Exception as exc:
+        return jsonify({"status": "error", "message": str(exc)}), 500
+
+@app.route("/api/add-maintenance-log", methods=["POST"])
+def add_maintenance_log():
+    data = request.json
+    try:
+        conn = psycopg2.connect(**DB_CONFIG)
+        with conn.cursor() as cursor:
+            cursor.execute("""
+                INSERT INTO maintenance_log (machine_id, date_intervention, technicien, cout_pieces, observations)
+                VALUES (%s, %s, %s, %s, %s)
+            """, (data.get("machine_id"), data.get("date"), data.get("technicien"), data.get("cout"), data.get("observations")))
+            # Mettre à jour le statut de la machine si elle était en panne
+            cursor.execute("UPDATE machines SET status = 'Actif' WHERE machine_id = %s", (data.get("machine_id"),))
+            conn.commit()
+        return jsonify({"status": "success", "message": "Intervention de maintenance enregistrée avec succès."})
+    except Exception as exc:
+        return jsonify({"status": "error", "message": str(exc)}), 500
+
 if __name__ == "__main__":
+
 
     port = int(os.getenv("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=True)
