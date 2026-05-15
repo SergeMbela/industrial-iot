@@ -320,16 +320,19 @@ def get_latest_telemetry():
     try:
         conn = psycopg2.connect(**DB_CONFIG)
         with conn.cursor() as cursor:
-            # Récupère la dernière ligne de télémétrie pour chaque machine ainsi que son statut de base
+            # Récupère la dernière ligne de télémétrie, le statut, et les seuils de configuration
             cursor.execute("""
                 SELECT DISTINCT ON (s.machine_id) 
                     s.machine_id, 
                     s.timestamp, 
                     s.oil_temp_c, 
                     s.cycle_speed_s,
-                    m.status
+                    m.status,
+                    s.alert_label,
+                    c.temp_threshold_max
                 FROM sensor_data s
                 JOIN machines m ON s.machine_id = m.machine_id
+                LEFT JOIN machine_configurations c ON m.type_id = c.type_id AND m.brand_id = c.brand_id
                 ORDER BY s.machine_id, s.timestamp DESC;
             """)
             
@@ -340,9 +343,108 @@ def get_latest_telemetry():
                     "timestamp": row[1].isoformat() if row[1] else None,
                     "temp": float(row[2] or 0),
                     "speed": float(row[3] or 0),
-                    "status": row[4]
+                    "status": row[4],
+                    "alert_label": row[5] if row[5] else "Normal",
+                    "temp_max": float(row[6]) if row[6] is not None else 85.0
                 })
         return jsonify(telemetry)
+    except Exception as exc:
+        return jsonify({"status": "error", "message": str(exc)}), 500
+    finally:
+        if 'conn' in locals():
+            conn.close()
+
+
+@app.route("/api/machine-stats/<machine_id>", methods=["GET"])
+def get_machine_stats(machine_id):
+    try:
+        conn = psycopg2.connect(**DB_CONFIG)
+        with conn.cursor() as cursor:
+            # On prend les stats sur les dernières 24h ou tout l'historique récent
+            cursor.execute("""
+                SELECT 
+                    COUNT(*),
+                    ROUND(AVG(oil_temp_c), 2), MAX(oil_temp_c),
+                    ROUND(AVG(vibration_rms_mm_s), 2), MAX(vibration_rms_mm_s),
+                    ROUND(AVG(fuel_consumption_lh), 2),
+                    COUNT(*) FILTER (WHERE alert_label != 'Normal')
+                FROM sensor_data
+                WHERE machine_id = %s
+            """, (machine_id,))
+            
+            row = cursor.fetchone()
+            
+            if not row or row[0] == 0:
+                return jsonify({"status": "error", "message": "Aucune donnée trouvée"}), 404
+                
+            stats = {
+                "total_records": row[0],
+                "avg_temp": float(row[1] or 0),
+                "max_temp": float(row[2] or 0),
+                "avg_vib": float(row[3] or 0),
+                "max_vib": float(row[4] or 0),
+                "avg_fuel": float(row[5] or 0),
+                "alerts_count": row[6] or 0
+            }
+            
+            # Récupération des 5 dernières alertes
+            cursor.execute("""
+                SELECT timestamp, alert_label 
+                FROM sensor_data 
+                WHERE machine_id = %s AND alert_label != 'Normal'
+                ORDER BY timestamp DESC LIMIT 5
+            """, (machine_id,))
+            
+            recent_alerts = [{"time": r[0].isoformat() if r[0] else None, "label": r[1]} for r in cursor.fetchall()]
+            stats["recent_alerts"] = recent_alerts
+
+        return jsonify(stats)
+    except Exception as exc:
+        return jsonify({"status": "error", "message": str(exc)}), 500
+    finally:
+        if 'conn' in locals():
+            conn.close()
+
+
+@app.route("/api/global-monitoring", methods=["GET"])
+def get_global_monitoring():
+    try:
+        conn = psycopg2.connect(**DB_CONFIG)
+        with conn.cursor() as cursor:
+            # 1. Total des enregistrements et dernière MAJ
+            cursor.execute("SELECT COUNT(*), MAX(timestamp) FROM sensor_data")
+            row_count = cursor.fetchone()
+            total_records = row_count[0]
+            last_update = row_count[1]
+            
+            # 2. Alertes sur la dernière heure
+            cursor.execute("""
+                SELECT COUNT(*) 
+                FROM sensor_data 
+                WHERE alert_label != 'Normal' 
+                AND timestamp >= NOW() - INTERVAL '1 hour'
+            """)
+            recent_alerts = cursor.fetchone()[0]
+            
+            # 3. Machines actives
+            cursor.execute("SELECT COUNT(DISTINCT machine_id) FROM machines")
+            total_machines = cursor.fetchone()[0]
+            
+            # Considéré en ligne si données dans les 2 dernières minutes
+            cursor.execute("""
+                SELECT COUNT(DISTINCT machine_id) 
+                FROM sensor_data 
+                WHERE timestamp >= NOW() - INTERVAL '2 minutes'
+            """)
+            online_machines = cursor.fetchone()[0]
+
+        return jsonify({
+            "total_records": total_records,
+            "last_update": last_update.isoformat() if last_update else None,
+            "recent_alerts": recent_alerts,
+            "total_machines": total_machines,
+            "online_machines": online_machines
+        })
     except Exception as exc:
         return jsonify({"status": "error", "message": str(exc)}), 500
     finally:

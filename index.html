@@ -32,6 +32,7 @@
         <button class="sub-tab-button" data-subtab="nouvelle-machine">Nouvelle machine</button>
         <button class="sub-tab-button" data-subtab="maintenance">Maintenance</button>
         <button class="sub-tab-button" data-subtab="marques-sub">Marques</button>
+        <button class="sub-tab-button" data-subtab="statistiques">Statistiques</button>
       </div>
 
       <div id="liste-machines" class="sub-tab-panel">
@@ -68,6 +69,45 @@
         <h3 style="margin-bottom: 1rem; color: var(--text-muted); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em;">État du parc en temps réel</h3>
         <div class="card-grid" id="etatParcGrid">
           <!-- Rempli par JS -->
+        </div>
+      </div>
+
+      <div id="statistiques" class="sub-tab-panel">
+        <h3 style="margin-bottom: 1rem; color: var(--text-muted); font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.05em;">Statistiques Historiques</h3>
+        <div class="card" style="margin-bottom: 2rem;">
+          <div style="display: flex; gap: 1rem; align-items: center;">
+            <label for="statMachineSelect" style="font-weight: 600;">Sélectionner une machine :</label>
+            <select id="statMachineSelect" class="form-input" style="max-width: 300px; margin: 0;">
+              <option value="">Chargement...</option>
+            </select>
+            <button onclick="loadMachineStats()" class="btn" style="width: auto; padding: 0.5rem 1.5rem;">Analyser</button>
+          </div>
+        </div>
+
+        <div id="statsResults" style="display: none;">
+          <div class="card-grid" style="margin-bottom: 1.5rem;">
+            <div class="card" style="border-top: 4px solid var(--primary-color);">
+              <h3 style="color: var(--text-muted); font-size: 0.85rem;">Température Huile</h3>
+              <p style="font-size: 1.5rem; margin-top: 0.5rem;">Moy: <span id="statAvgTemp">--</span>°C</p>
+              <p style="font-size: 0.9rem;">Max: <span id="statMaxTemp" style="color: var(--error-color); font-weight: bold;">--</span>°C</p>
+            </div>
+            <div class="card" style="border-top: 4px solid var(--primary-color);">
+              <h3 style="color: var(--text-muted); font-size: 0.85rem;">Vibrations RMS</h3>
+              <p style="font-size: 1.5rem; margin-top: 0.5rem;">Moy: <span id="statAvgVib">--</span> mm/s</p>
+              <p style="font-size: 0.9rem;">Max: <span id="statMaxVib" style="color: var(--error-color); font-weight: bold;">--</span> mm/s</p>
+            </div>
+            <div class="card" style="border-top: 4px solid var(--primary-color);">
+              <h3 style="color: var(--text-muted); font-size: 0.85rem;">Consommation & Alertes</h3>
+              <p style="font-size: 1.5rem; margin-top: 0.5rem;">Moy: <span id="statAvgFuel">--</span> L/h</p>
+              <p style="font-size: 0.9rem;">Anomalies: <span id="statAlertsCount" style="color: var(--warning-color); font-weight: bold;">--</span> (sur <span id="statTotalRec">--</span> cycles)</p>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Dernières anomalies détectées</h3>
+            <ul id="statAlertsList" style="margin-top: 1rem; color: var(--text-color); font-size: 0.9rem; padding-left: 1rem; line-height: 1.5;">
+              <!-- Rempli par JS -->
+            </ul>
+          </div>
         </div>
       </div>
 
@@ -240,22 +280,22 @@
     </section>
 
     <section id="monitoring" class="tab-panel" role="tabpanel">
-      <h2 class="section-title">Monitoring</h2>
+      <h2 class="section-title">Monitoring Global</h2>
       <div class="card-grid">
         <div class="card">
           <h3>Flux de données</h3>
-          <p>Dernière mise à jour : 12 secondes</p>
-          <p>Volume : 1.2 Mo/s</p>
+          <p>Dernière mise à jour : <strong id="monLastUpdate">--</strong></p>
+          <p>Volume (lignes) : <strong id="monTotalRecords">--</strong></p>
         </div>
         <div class="card">
-          <h3>Alertes récentes</h3>
-          <p>0 alertes critiques</p>
-          <p>2 alertes de performance</p>
+          <h3>Alertes récentes (Dernière heure)</h3>
+          <p><span id="monRecentAlerts" style="font-size: 1.5rem; font-weight: bold; color: var(--error-color);">--</span> anomalies détectées</p>
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.5rem;">Consultez les détails dans Machines > Statistiques</p>
         </div>
         <div class="card">
-          <h3>Disponibilité</h3>
-          <p>Taux de disponibilité : 99.8 %</p>
-          <p>Temps d'arrêt : 12 min / 24h</p>
+          <h3>Disponibilité du parc</h3>
+          <p>Machines communicantes : <strong id="monOnlineMachines">--</strong> / <strong id="monTotalMachines">--</strong></p>
+          <p>Taux de connectivité : <span id="monAvailRate" style="font-size: 1.2rem; font-weight: bold;">--</span> %</p>
         </div>
       </div>
     </section>
@@ -365,6 +405,7 @@
 
         // Charger les données spécifiques si nécessaire
         if (tab.dataset.subtab === 'etat-parc') loadEtatParc();
+        if (tab.dataset.subtab === 'statistiques') loadStatMachinesDropdown();
         if (tab.dataset.subtab === 'liste-machines') loadMachinesList();
         if (tab.dataset.subtab === 'param-valeurs') loadMachineConfigs();
       });
@@ -762,14 +803,31 @@
             statusClass = 'status-warning';
             statusText = m.status;
           }
+          
+          let tempStyle = '';
+          let tempWarning = '';
+          if (m.temp > m.temp_max) {
+            tempStyle = 'color: var(--error-color); font-weight: bold;';
+            tempWarning = `(Max: ${m.temp_max}°C)`;
+          }
+
+          let alertHtml = '';
+          if (m.alert_label && m.alert_label !== 'Normal') {
+            alertHtml = `<div style="background: rgba(239, 68, 68, 0.1); color: var(--error-color); padding: 0.5rem; border-radius: 4px; font-size: 0.8rem; margin-top: 0.5rem; font-weight: 600;">⚠️ ${m.alert_label}</div>`;
+          }
 
           const card = document.createElement('div');
           card.className = 'card';
+          if (m.alert_label && m.alert_label !== 'Normal') {
+            card.style.borderLeft = '4px solid var(--error-color)';
+          }
+
           card.innerHTML = `
             <h3>${m.machine_id}</h3>
             <p>Statut <span class="${statusClass}"><i class="status-indicator ${statusClass}"></i>${statusText}</span></p>
-            <p>Temp. Huile <span>${m.temp}°C</span></p>
+            <p>Temp. Huile <span style="${tempStyle}">${m.temp}°C ${tempWarning}</span></p>
             <p>Vitesse Cycle <span>${m.speed} s</span></p>
+            ${alertHtml}
             <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;">Maj: ${isOnline ? "À l'instant" : "Il y a " + Math.floor(diffSec/60) + " min"}</p>
           `;
           grid.appendChild(card);
@@ -802,6 +860,9 @@
         }
         if (tab.dataset.tab === 'configuration') {
           loadProcessStatus();
+        }
+        if (tab.dataset.tab === 'monitoring') {
+          loadGlobalMonitoring();
         }
       });
     });
@@ -848,6 +909,116 @@
     // Charger le statut au démarrage et toutes les 5s
     loadProcessStatus();
     setInterval(loadProcessStatus, 5000);
+
+    // --- Gestion des statistiques ---
+    const loadStatMachinesDropdown = async () => {
+      const select = document.getElementById('statMachineSelect');
+      if (!select || select.options.length > 1) return; // Déjà chargé
+      try {
+        const response = await fetch('/get-machines?page=1&per_page=1000');
+        const data = await response.json();
+        select.innerHTML = '<option value="">Sélectionner une machine...</option>';
+        data.machines.forEach(m => {
+          const opt = document.createElement('option');
+          opt.value = m.id;
+          opt.textContent = `${m.id} - ${m.type} ${m.brand || ''}`;
+          select.appendChild(opt);
+        });
+      } catch (err) {
+        console.error("Erreur chargement dropdown stats", err);
+      }
+    };
+
+    window.loadMachineStats = async () => {
+      const select = document.getElementById('statMachineSelect');
+      const machineId = select.value;
+      if (!machineId) {
+        alert('Veuillez sélectionner une machine');
+        return;
+      }
+      
+      try {
+        const res = await fetch(`/api/machine-stats/${machineId}`);
+        const data = await res.json();
+        
+        if (!res.ok) {
+          alert(data.message || 'Erreur');
+          return;
+        }
+        
+        document.getElementById('statsResults').style.display = 'block';
+        document.getElementById('statAvgTemp').textContent = data.avg_temp;
+        document.getElementById('statMaxTemp').textContent = data.max_temp;
+        document.getElementById('statAvgVib').textContent = data.avg_vib;
+        document.getElementById('statMaxVib').textContent = data.max_vib;
+        document.getElementById('statAvgFuel').textContent = data.avg_fuel;
+        document.getElementById('statAlertsCount').textContent = data.alerts_count;
+        document.getElementById('statTotalRec').textContent = data.total_records;
+        
+        const list = document.getElementById('statAlertsList');
+        list.innerHTML = '';
+        if (data.recent_alerts && data.recent_alerts.length > 0) {
+          data.recent_alerts.forEach(a => {
+            const li = document.createElement('li');
+            const d = new Date(a.time).toLocaleString('fr-FR');
+            li.innerHTML = `<strong>${d}</strong> : <span style="color: var(--error-color);">${a.label}</span>`;
+            list.appendChild(li);
+          });
+        } else {
+          list.innerHTML = '<li>Aucune anomalie enregistrée pour cette machine.</li>';
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Erreur lors du chargement des statistiques");
+      }
+    };
+
+    // --- Global Monitoring ---
+    const loadGlobalMonitoring = async () => {
+      try {
+        const res = await fetch('/api/global-monitoring?t=' + new Date().getTime());
+        if (!res.ok) return;
+        const data = await res.json();
+        
+        document.getElementById('monTotalRecords').textContent = data.total_records.toLocaleString('fr-FR');
+        
+        if (data.last_update) {
+          const mDate = new Date(data.last_update);
+          const diffSec = Math.floor((new Date() - mDate) / 1000);
+          if (diffSec < 60) {
+            document.getElementById('monLastUpdate').textContent = `Il y a ${diffSec} sec`;
+            document.getElementById('monLastUpdate').style.color = 'var(--success-color)';
+          } else {
+            document.getElementById('monLastUpdate').textContent = `Il y a ${Math.floor(diffSec/60)} min`;
+            document.getElementById('monLastUpdate').style.color = 'var(--error-color)';
+          }
+        } else {
+          document.getElementById('monLastUpdate').textContent = 'Jamais';
+        }
+        
+        document.getElementById('monRecentAlerts').textContent = data.recent_alerts;
+        document.getElementById('monOnlineMachines').textContent = data.online_machines;
+        document.getElementById('monTotalMachines').textContent = data.total_machines;
+        
+        const rate = data.total_machines > 0 ? (data.online_machines / data.total_machines * 100).toFixed(1) : 0;
+        const rateSpan = document.getElementById('monAvailRate');
+        rateSpan.textContent = rate;
+        if (rate >= 90) rateSpan.style.color = 'var(--success-color)';
+        else if (rate >= 50) rateSpan.style.color = 'var(--warning-color)';
+        else rateSpan.style.color = 'var(--error-color)';
+        
+      } catch (err) {
+        console.error("Erreur chargement monitoring global", err);
+      }
+    };
+
+    // Rafraîchir les tabs dynamiques en arrière-plan
+    setInterval(() => {
+      const monTab = document.getElementById('monitoring');
+      if (monTab && monTab.classList.contains('active')) {
+        loadGlobalMonitoring();
+      }
+    }, 5000);
 
   </script>
 </body>

@@ -80,9 +80,12 @@ services:
     command: ["/opt/spark/bin/spark-class", "org.apache.spark.deploy.master.Master"]
     environment:
       - SPARK_MASTER_HOST=spark-master
+      - IN_DOCKER=true
     ports:
       - "8082:8080"      # Spark Web UI (external port changed because 8080 is already in use)
       - "7077:7077"      # Spark master port
+    volumes:
+      - ./:/app
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080"]
       interval: 30s
@@ -97,8 +100,11 @@ services:
     command: ["/opt/spark/bin/spark-class", "org.apache.spark.deploy.worker.Worker", "spark://spark-master:7077"]
     environment:
       - SPARK_WORKER_WEBUI_PORT=8081
+      - IN_DOCKER=true
     ports:
       - "8081:8081"      # Spark worker Web UI
+    volumes:
+      - ./:/app
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8081"]
       interval: 30s
