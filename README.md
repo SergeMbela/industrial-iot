@@ -1,115 +1,101 @@
-# 🏭 Système de Supervision et d'Analyse Prédictive - Industrial IoT
+🏭 Système de Supervision et d'Analyse Prédictive - Industrial IoT
+Bienvenue dans le projet Industrial IoT. Ce projet est une plateforme complète développée pour répondre au besoin de simulation réaliste avant l'intégration de données de production réelles. Il permet la simulation, l'ingestion, le traitement, la visualisation et l'analyse prédictive de données télémétriques provenant de machines industrielles lourdes (broyeurs, pompes, foreuses, excavatrices, camions).
 
-Bienvenue dans le projet **Industrial IoT**. Ce projet est une plateforme complète développée pour répondre au besoin du client d'avoir une **simulation réaliste complète avant d'intégrer des données réelles de production**. Il permet la simulation, l'ingestion, le traitement, la visualisation et l'analyse prédictive de données télémétriques provenant de machines industrielles lourdes (broyeurs, pompes, foreuses, excavatrices, camions).
+Note sur le contexte opérationnel : Le système est conçu pour modéliser des environnements de travail exigeants. Les capteurs simulés prennent en compte l'impact direct de conditions sévères (humidité, poussière, chaleur intense) qui altèrent la précision des mesures et accélèrent l'usure des composants. De plus, le simulateur intègre des contraintes réseau réelles (latence, gigue, pertes de paquets) propres aux infrastructures On-premise, Starlink ou Wi-Fi industriel, testant ainsi la résilience du système d'ingestion.
 
+🌟 Fonctionnalités Principales
+Simulation de Parc Machine : Génération de données capteurs réalistes (Vibrations, Température, Consommation, Ampérage) intégrant des variables exogènes et des paramètres de connectivité.
 
+Ingestion Hautes Performances : Utilisation de RabbitMQ pour la gestion de la file de messages asynchrone, robuste face aux coupures réseau.
 
-## 🌟 Fonctionnalités Principales
+Stockage Structuré : Base de données PostgreSQL modélisant le parc (marques, types, localisations, configurations, maintenance) et les séries temporelles.
 
-1. **Simulation de Parc Machine** : Génération de données capteurs réalistes (Vibrations, Température, Consommation, Ampérage) via un script producteur.
-2. **Ingestion Hautes Performances** : Utilisation de **RabbitMQ** pour la gestion de la file de messages asynchrone.
-3. **Stockage Structuré** : Base de données **PostgreSQL** modélisant le parc (marques, types, localisations, configurations, historique de maintenance) et les séries temporelles.
-4. **Tableau de Bord interactif** : Interface web (HTML/CSS/JS + Flask) permettant de :
-   - Superviser l'état du parc en temps réel.
-   - Configurer les seuils d'alertes par modèle de machine.
-   - Gérer les services d'arrière-plan (Démarrage/Arrêt de la simulation).
-5. **Analyse Distribuée (Big Data)** : Un cluster **Apache Spark** intégré pour réaliser des statistiques descriptives sur de grands volumes de données.
-6. **Intelligence Artificielle (Maintenance Prédictive)** : Entraînement d'un modèle **Random Forest** (PySpark MLlib) capable de prédire le risque d'anomalie d'une machine en se basant sur ses indicateurs physiques (vibration, température, vitesse, consommation) et environnementaux (élévation/profondeur).
-7. **Détection par Similarité (Vector Database)** : Utilisation de **Qdrant** pour stocker et comparer les "signatures" mathématiques des pannes passées avec les données en temps réel.
+Tableau de Bord interactif : Interface web (Flask) pour la supervision, la configuration des seuils d'alertes et la gestion des services d'arrière-plan.
 
----
+Analyse Distribuée (Big Data) : Cluster Apache Spark intégré pour les statistiques descriptives à grande échelle.
 
-## 🏗️ Architecture du Projet
+Intelligence Artificielle (Maintenance Prédictive) : Modèle Random Forest (PySpark MLlib) corrélant indicateurs physiques, environnementaux et qualité de transmission réseau.
 
-```text
-[ producteur.py ] ---> (RabbitMQ) ---> [ consumer.py ] ---> (PostgreSQL)
-       |                                                         |
-  Générateur                                                     +---> [ Qdrant ] (Vector DB)
- de données                                                      |       ^
-                                                                 v       |
-                                                     [ cluster Apache Spark ]
-                                                     - spark_job.py (Stats)
-                                                     - predictive_job.py (IA)
-                                                                 |
-                                                                 v
+Détection par Similarité (Vector Database) : Utilisation de Qdrant pour comparer les signatures mathématiques des pannes passées avec la télémétrie temps réel.
+
+🏗️ Architecture du Projet
+Plaintext
+[ producteur.py ] --(Reseau: Starlink/Wifi/On-prem)--> (RabbitMQ) ---> [ consumer.py ] ---> (PostgreSQL)
+        |                                                                                    |
+  Générateur                                                                                 +---> [ Qdrant ] (Vector DB)
+ de données                                                                                   |       ^
+                                                                                              v       |
+                                                                                  [ cluster Apache Spark ]
+                                                                                  - spark_job.py (Stats)
+                                                                                  - predictive_job.py (IA)
+                                                                                             |
+                                                                                             v
 [ Tableau de bord Web ] <--- (API REST Flask) <---------- (PostgreSQL)
-```
+Stack Technique
+Backend / API : Python, Flask
 
-### Stack Technique
-- **Backend / API** : Python, Flask
-- **Message Broker** : RabbitMQ
-- **Base de Données Relationnelle** : PostgreSQL
-- **Base de Données Vectorielle** : Qdrant
-- **Big Data & Machine Learning** : Apache Spark (PySpark), Spark MLlib
-- **Observabilité** : Grafana
-- **Frontend** : Vanilla JS, HTML, CSS natif
-- **Déploiement** : Docker & Docker-compose
+Message Broker : RabbitMQ
 
----
+Base de Données : PostgreSQL (Relationnelle), Qdrant (Vectorielle)
 
-## 🚀 Guide de Démarrage Rapide
+Big Data / IA : Apache Spark (PySpark), Spark MLlib
 
-### 1. Démarrer l'infrastructure
-Assurez-vous d'avoir Docker et Docker-compose installés, puis lancez les services en arrière-plan :
-```bash
+Observabilité : Grafana
+
+Déploiement : Docker & Docker-compose
+
+🚀 Guide de Démarrage Rapide
+1. Infrastructure
+Lancez les services en arrière-plan :
+
+Bash
 docker-compose up -d
-```
-*(Pour plus de détails sur les ports et les services, consultez le fichier `SERVICES_SETUP.md`)*.
+2. Interface Web (Flask)
+Installez les dépendances et lancez le serveur :
 
-### 2. Démarrer l'interface web (Flask)
-Dans votre environnement virtuel Python, installez les dépendances et lancez le serveur :
-```bash
+Bash
 pip install -r requirements.txt
 python app.py
-```
-Accédez ensuite au tableau de bord via : **http://localhost:5000**
+Accès : http://localhost:5000
 
-### 3. Initialiser le système via le Tableau de Bord
-1. Allez dans l'onglet **Configuration** de l'interface.
-2. Cliquez sur le bouton **Créer les tables** pour initialiser la base de données PostgreSQL avec le schéma défini dans `matrice.sql` (cela ajoute les machines de base et configure les relations).
-3. Dans la section *Services de Télémétrie*, cliquez sur **▶ Démarrer** pour le *Consommateur* puis pour le *Producteur*.
-4. Allez dans l'onglet **Machines > Etat du parc** pour voir les données arriver en temps réel !
+3. Initialisation
+Accédez à l'onglet Configuration via l'interface.
 
----
+Cliquez sur Créer les tables pour initialiser PostgreSQL.
 
-## 🧠 Utiliser l'Analyse Prédictive (IA)
+Configurez le mode réseau et cliquez sur ▶ Démarrer les services de télémétrie.
 
-Pour exploiter le système de maintenance prédictive :
+🧠 Analyse Prédictive & Recherche de Signatures
+Prédiction (IA) : Une fois 100+ relevés générés, utilisez l'onglet Analyse Prédictive pour entraîner le modèle Random Forest. Il corrélera automatiquement les pannes avec les conditions d'humidité, poussière et réseau.
 
-1. Laissez le *Producteur* tourner suffisamment longtemps pour générer au moins **100 relevés** de capteurs.
-2. Naviguez vers l'onglet **Machines > Analyse Prédictive (IA)**.
-3. Cliquez sur **▶ Entraîner & Prédire**. Le backend va soumettre un job au cluster Spark en utilisant `predictive_job.py`.
-4. Le modèle *Random Forest* va :
-   - Lire l'historique complet des capteurs.
-   - S'enrichir de l'**élévation de la machine** (qui impacte la pression et la température).
-   - S'entraîner à différencier un fonctionnement normal d'une anomalie.
-   - Appliquer ce modèle aux données récentes.
-5. Cliquez sur **Actualiser** après 20 secondes : le tableau affichera le niveau de risque pour chaque machine (Faible, Modéré, Critique).
+Similarité (Qdrant) : Exécutez python qdrant_signatures.py pour vectoriser les pannes historiques. Le système comparera en temps réel les nouveaux flux avec ces signatures (similarité > 98%).
 
----
+🛣️ Roadmap : Vers la Mise en Production
+Audit de Sécurité : Implémentation TLS pour RabbitMQ et sécurisation stricte des accès bases de données.
 
-## 🔍 Recherche de Signatures d'Anomalies (Qdrant)
+Adaptateurs MQTT : Remplacement du producteur.py par des connecteurs réels (MQTT) pour interfaçage avec les PLC/SCADA industriels.
 
-Une autre approche de maintenance prédictive implémentée repose sur la similarité vectorielle :
+Spark Streaming : Transition du traitement "batch" vers Spark Structured Streaming pour une analyse à latence ultra-faible.
 
-1. Exécutez le script dédié : `python qdrant_signatures.py`
-2. Ce script va analyser toutes les pannes enregistrées dans PostgreSQL.
-3. Il convertit chaque état critique en un **vecteur mathématique** et le stocke dans la base de données **Qdrant**.
-4. Vous pouvez ensuite utiliser cette base pour comparer une télémétrie en temps réel avec des milliers de signatures de pannes historiques pour voir si la situation correspond (à plus de 98% de similarité) à un événement passé connu.
+Orchestration Cloud/K8s : Déploiement sur cluster Kubernetes pour la haute disponibilité et la scalabilité horizontale.
 
----
+Monitoring Avancé : Intégration de la stack Prometheus/Grafana pour un suivi proactif de la santé infrastructurelle.
 
-## 📁 Structure des fichiers
+Recettage (UAT) : Tests d'acceptation utilisateur sur site pour valider les seuils d'alerte et minimiser les faux positifs.
 
-- `docker-compose.yml` : Infrastructure des conteneurs (Postgres, RabbitMQ, Spark, Grafana, Qdrant).
-- `app.py` : Serveur Flask, sert l'interface web et les API REST.
-- `index.html` : L'interface utilisateur.
-- `matrice.sql` : Script de création et de remplissage initial (seed) de la base de données.
-- `create_tables.py` : Exécuteur Python pour le script SQL.
-- `producer.py` : Script simulant les machines industrielles, insère les anomalies, et publie sur RabbitMQ.
-- `consumer.py` : Script écoutant RabbitMQ et sauvegardant les données brutes dans PostgreSQL.
-- `spark_job.py` : Job Spark pour le calcul asynchrone des statistiques récurrentes (Big Data).
-- `predictive_job.py` : Job Spark ML (Machine Learning) pour l'entraînement du modèle prédictif et l'inférence.
-- `qdrant_signatures.py` : Script d'extraction des pannes historiques, vectorisation et moteur de recherche par similarité via Qdrant.
-- `grafana_observability_dashboard.json` : Tableau de bord prêt à l'emploi pour superviser les capteurs dans Grafana.
-- `SERVICES_SETUP.md` : Guide de dépannage spécifique à Docker et aux identifiants.
+📁 Structure des fichiers
+docker-compose.yml : Orchestration des conteneurs.
+
+app.py : Serveur Flask & API.
+
+producer.py : Simulation des machines (données + contexte réseau/environnement).
+
+consumer.py : Ingestion des données.
+
+spark_job.py : Job Spark (Stats).
+
+predictive_job.py : Job Spark ML (Maintenance prédictive).
+
+qdrant_signatures.py : Moteur de recherche vectorielle.
+
+SERVICES_SETUP.md : Guide technique de dépannage.
