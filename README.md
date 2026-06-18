@@ -1,5 +1,9 @@
 🏭 Système de Supervision et d'Analyse Prédictive - Industrial IoT
+
+![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54) ![Apache Spark](https://img.shields.io/badge/Apache%20Spark-FDEE21?style=for-the-badge&logo=apachespark&logoColor=black) ![RabbitMQ](https://img.shields.io/badge/RabbitMQ-FF6600?style=for-the-badge&logo=rabbitmq&logoColor=white) ![Qdrant](https://img.shields.io/badge/Qdrant-red?style=for-the-badge&logo=qdrant&logoColor=white) ![PostgreSQL](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white) ![Flask](https://img.shields.io/badge/flask-%23000.svg?style=for-the-badge&logo=flask&logoColor=white) ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
+
 Bienvenue dans le projet Industrial IoT. Ce projet est une plateforme complète développée pour répondre au besoin de simulation réaliste avant l'intégration de données de production réelles. Il permet la simulation, l'ingestion, le traitement, la visualisation et l'analyse prédictive de données télémétriques provenant de machines industrielles lourdes (broyeurs, pompes, foreuses, excavatrices, camions).
+
 
 📖 **[Consulter le Wiki Développeur (WIKI.md)](WIKI.md)** pour une description détaillée de l'architecture, du schéma de la base de données et des commandes de développement.
 
