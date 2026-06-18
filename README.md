@@ -1,6 +1,8 @@
 # 🏭 Système de Supervision et d'Analyse Prédictive - Industrial IoT
 
-Bienvenue dans le projet **Industrial IoT**. Ce projet est une plateforme complète pour la simulation, l'ingestion, le traitement, la visualisation et l'analyse prédictive de données télémétriques provenant de machines industrielles lourdes (broyeurs, pompes, foreuses, excavatrices, camions).
+Bienvenue dans le projet **Industrial IoT**. Ce projet est une plateforme complète développée pour répondre au besoin du client d'avoir une **simulation réaliste complète avant d'intégrer des données réelles de production**. Il permet la simulation, l'ingestion, le traitement, la visualisation et l'analyse prédictive de données télémétriques provenant de machines industrielles lourdes (broyeurs, pompes, foreuses, excavatrices, camions).
+
+
 
 ## 🌟 Fonctionnalités Principales
 
