@@ -13,7 +13,7 @@ except ImportError:
 
 IN_DOCKER = os.getenv("IN_DOCKER", "false").lower() == "true"
 PG_HOST = os.getenv("PGHOST", "postgres" if IN_DOCKER else "localhost")
-PG_PORT = os.getenv("PGPORT", "5432" if IN_DOCKER else "5455")
+PG_PORT = os.getenv("PGPORT", "5438" if IN_DOCKER else "5455")
 PG_DB = os.getenv("PGDATABASE", "industrial_iot")
 PG_USER = os.getenv("PGUSER", "admin")
 PG_PASSWORD = os.getenv("PGPASSWORD", "admin123")
